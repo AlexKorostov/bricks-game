@@ -2,6 +2,8 @@
 
 A pseudo-3D tactical puzzle arcade game built with modern JavaScript and Three.js.
 
+🎮 **[Play Live Demo](https://alexkorostov.github.io/bricks-game/)**
+
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
