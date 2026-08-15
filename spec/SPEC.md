@@ -194,11 +194,21 @@ All renderers implement a unified contract:
    - Production single-file bundling: `bun run build`.
    - Produces 100% self-contained, standalone offline artifacts in `dist/bricks.html` and `dist/index.html` with all JS, CSS, and Three.js runtime fully inlined.
 
+3. **Continuous Integration & Automated Deployment (GitHub Actions)**:
+   - **Automated Testing Workflow (`.github/workflows/test.yml`)**:
+     - Triggers on every `push` and `pull_request` targeting `main`, plus manual `workflow_dispatch`.
+     - Sets up Bun, installs dependencies, and runs the entire unit test suite (`bun test`).
+   - **Automated GitHub Pages Deployment Workflow (`.github/workflows/deploy.yml`)**:
+     - Triggers on `push` to `main` and manual `workflow_dispatch`.
+     - Sets up Bun, installs dependencies, executes `bun run build` to compile the standalone single-file bundle, and deploys `dist/` to the `gh-pages` branch.
+
 ---
 
 ## 6. Technical Implementation & Test Coverage
 
 ### Module Map:
+- `.github/workflows/test.yml`: Continuous testing workflow running Vitest suite via Bun.
+- `.github/workflows/deploy.yml`: Continuous deployment workflow compiling single-file bundle and deploying to GitHub Pages.
 - `package.json`: Project manifest, scripts (`dev`, `build`, `test`), and dependencies (`three`, `vite`, `vite-plugin-singlefile`, `vitest`).
 - `vite.config.js`: Vite & Vitest configuration bundling the single-file HTML game to `dist/bricks.html`.
 - `src/core/Constants.js`: Definitions for grid size, wall depth, distinct 4-quadrant color palette, directions, and score multipliers.
@@ -222,3 +232,4 @@ All renderers implement a unified contract:
 ### Test Coverage (`tests/core.test.js`):
 - 100% deterministic unit test coverage for Brick, Grid, Physics, Matcher, and GameEngine Equilibrium Cascades.
 - Executed via standard **Vitest** (`bun test` or `bun run test`).
+
