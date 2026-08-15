@@ -146,8 +146,12 @@ export class Animator {
       const ejectedMesh = brickMeshesMap.get(ejected.id);
       promises.push(
         this.popAndDisappear(ejectedMesh, 0.22).then(() => {
-          scene.remove(ejectedMesh);
-          const bInst = ejectedMesh.userData.brickMesh;
+          if (ejectedMesh.parent) {
+            ejectedMesh.parent.remove(ejectedMesh);
+          } else {
+            scene.remove(ejectedMesh);
+          }
+          const bInst = ejectedMesh.userData?.brickMesh;
           if (bInst) bInst.dispose();
           brickMeshesMap.delete(ejected.id);
         })
@@ -283,8 +287,12 @@ export class Animator {
             if (meshGroup) {
               disappearPromises.push(
                 this.popAndDisappear(meshGroup, 0.22).then(() => {
-                  scene.remove(meshGroup);
-                  const bMeshInstance = meshGroup.userData.brickMesh;
+                  if (meshGroup.parent) {
+                    meshGroup.parent.remove(meshGroup);
+                  } else {
+                    scene.remove(meshGroup);
+                  }
+                  const bMeshInstance = meshGroup.userData?.brickMesh;
                   if (bMeshInstance) bMeshInstance.dispose();
                   brickMeshesMap.delete(brick.id);
                 })

@@ -183,6 +183,9 @@ class BricksApp {
       soundSystem: this.sound,
     });
 
+    // Authoritatively synchronize renderer with final grid state to guarantee zero ghost meshes
+    this.activeRenderer.syncFromGrid(this.engine.grid);
+
     this.ui.updateHUD(this.engine.score, this.engine.highScore, this.engine.wave);
 
     if (turnResult.state === 'WAVE_CLEAR') {
