@@ -166,14 +166,18 @@ All renderers implement a unified contract:
 ### 4.6 HUD & Quick Restart Controls
 - **Restart Button**: Positioned in the left HUD header group, immediately to the right of the brand title and Wave indicator pill.
 - **Icon & Accessibility**: Renders as a clean circular arrow (`↻`) icon button with tooltip `"Restart Game"` and ARIA label.
-- **Behavior**:
-  - Clicking Restart instantly resets the game state back to Wave 1 with 0 score.
-  - Generates a fresh randomized central 10×10 field and fully populated 4 wall queues.
-  - Automatically closes/dismisses any active modal overlays (Wave Clear or Game Over).
-  - Re-enables player input and synchronizes the active renderer (3D or 2D).
+- **Wave-Level Restart Behavior & Score Rollback**:
+  - **Score Snapshot**: At the beginning of each wave, the starting score is recorded (`waveStartScore`).
+  - **Restart Rollback**: Triggering a restart (via HUD Restart button `↻` or modal "Play Again ↻") resets the **current wave**:
+    - Rolls back the active score to the exact score at the beginning of the current wave (`score = waveStartScore`).
+    - Generates a fresh randomized central 10×10 field (scaled according to the current wave density) and freshly populated wall queues across all 4 sides.
+    - Preserves all-time high score intact.
+    - Automatically closes/dismisses any active modal overlays (Wave Clear or Game Over).
+    - Re-enables player input and synchronizes the active renderer (3D or 2D).
 - **HUD Layout & Responsiveness**:
   - **Left HUD Group**: `[BRICKS Wave N]` brand badge + `[↻]` Restart icon button.
   - **Right HUD Group**: Score card, High Score card, Mode Toggle button (3D / 2D Eco), Sound Toggle button (`🔊`/`🔇`), and Help button (`?`).
+
 
 
 ---

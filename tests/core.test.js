@@ -429,16 +429,52 @@ describe('GameEngine Cascades & Full Turns', () => {
     engine.highScore = 20000;
     engine.state = GAME_STATES.GAME_OVER;
 
-    // Trigger restart
+    // Trigger restart of whole game from wave 1
     engine.startNewGame(1);
 
     assert.strictEqual(engine.score, 0);
+    assert.strictEqual(engine.waveStartScore, 0);
     assert.strictEqual(engine.wave, 1);
     assert.strictEqual(engine.highScore, 20000, 'High score should be preserved across restarts');
     assert.strictEqual(engine.state, GAME_STATES.READY);
     assert.ok(engine.grid.countFieldBricks() >= 5, 'Field should be populated with new random bricks');
     assert.strictEqual(engine.hasAnyValidMoves(), true, 'Fresh board should have valid launch options');
   });
+
+  it('resets score to the beginning of current wave on restartCurrentWave()', () => {
+    const engine = new GameEngine();
+    // Start wave 1
+    engine.startNewGame(1);
+    assert.strictEqual(engine.wave, 1);
+    assert.strictEqual(engine.score, 0);
+    assert.strictEqual(engine.waveStartScore, 0);
+
+    // Simulate clearing wave 1: score = 3,200
+    engine.score = 3200;
+    engine.highScore = 3200;
+
+    // Advance to Wave 2
+    engine.startNewGame(2);
+    assert.strictEqual(engine.wave, 2);
+    assert.strictEqual(engine.score, 3200);
+    assert.strictEqual(engine.waveStartScore, 3200, 'Wave 2 start score must be recorded as 3200');
+
+    // Simulate player scoring 800 pts during Wave 2
+    engine.score = 4000;
+    engine.highScore = 4000;
+
+    // Player restarts current wave
+    const restartResult = engine.restartCurrentWave();
+
+    assert.strictEqual(engine.wave, 2, 'Should remain on wave 2');
+    assert.strictEqual(engine.score, 3200, 'Score must be reset to 3200 (score at beginning of Wave 2)');
+    assert.strictEqual(engine.waveStartScore, 3200);
+    assert.strictEqual(engine.highScore, 4000, 'High score remains intact');
+    assert.strictEqual(engine.state, GAME_STATES.READY);
+    assert.strictEqual(restartResult.score, 3200);
+    assert.ok(engine.grid.countFieldBricks() >= 6, 'Wave 2 field must be freshly populated');
+  });
 });
+
 
 

@@ -36,7 +36,7 @@ class BricksApp {
 
     // 2. Initialize UI Manager
     this.ui = new UIManager({
-      onRestartGame: () => this.startNewGame(1),
+      onRestartGame: () => this.restartCurrentWave(),
       onNextWave: () => this.startNextWave(),
       onToggleSound: () => this.sound.toggleSound(),
       onToggleRenderMode: () => this.toggleRenderMode(),
@@ -81,6 +81,13 @@ class BricksApp {
         }
       }
     }
+  }
+
+  restartCurrentWave() {
+    this.engine.restartCurrentWave();
+    this.activeRenderer.syncFromGrid(this.engine.grid);
+    this.ui.updateHUD(this.engine.score, this.engine.highScore, this.engine.wave);
+    this.activeRenderer.setEnabled(true);
   }
 
   startNewGame(wave = 1) {

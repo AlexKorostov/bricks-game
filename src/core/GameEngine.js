@@ -12,6 +12,7 @@ export class GameEngine {
     this.grid = new Grid(this.gridSize, this.wallDepth);
 
     this.score = 0;
+    this.waveStartScore = 0;
     this.highScore = 0;
     this.wave = 1;
     this.state = GAME_STATES.READY;
@@ -22,7 +23,11 @@ export class GameEngine {
     this.wave = wave;
     if (wave === 1) {
       this.score = 0;
+      this.waveStartScore = 0;
       this.turnCount = 0;
+    } else {
+      // Snapshot score at the beginning of the wave
+      this.waveStartScore = this.score;
     }
     this.state = GAME_STATES.READY;
 
@@ -31,6 +36,24 @@ export class GameEngine {
     this.grid.populateWalls();
 
     // Spawn central bricks scaling slightly with wave
+    const centerCount = Math.min(5 + Math.floor((this.wave - 1) * 1.5), 14);
+    this.grid.populateCenter(centerCount);
+
+    return {
+      wave: this.wave,
+      score: this.score,
+      state: this.state,
+    };
+  }
+
+  restartCurrentWave() {
+    this.score = this.waveStartScore;
+    this.state = GAME_STATES.READY;
+
+    // Reset grid
+    this.grid = new Grid(this.gridSize, this.wallDepth);
+    this.grid.populateWalls();
+
     const centerCount = Math.min(5 + Math.floor((this.wave - 1) * 1.5), 14);
     this.grid.populateCenter(centerCount);
 
