@@ -177,6 +177,9 @@ All renderers implement a unified contract:
 - **Game Over & Wave Modals**:
   - Wave Clear modal allows advancing to next wave (`Start Next Wave →`).
   - Game Over modal provides options to restart current wave (`Restart Wave N ↻`) or restart from the beginning (`Reset to Wave 1 ⏮`).
+- **Help Modal ("How to Play")**:
+  - Explains the 4 core gameplay rules (Launch Bricks, Form Lines, Momentum Cascades, Clear the Field).
+  - Includes a direct link to the public GitHub repository (`https://github.com/AlexKorostov/bricks-game`) with GitHub branding for open-source visibility.
 - **HUD Layout & Responsiveness**:
   - **Left HUD Group**: `[BRICKS Wave N]` brand badge + `[↻]` Restart Current Wave button + `[⏮]` Reset to Wave 1 button.
   - **Right HUD Group**: Score card, High Score card, Mode Toggle button (3D / 2D Eco), Fullscreen Toggle button (`⛶`/`⤡`), Sound Toggle button (`🔊`/`🔇`), and Help button (`?`).

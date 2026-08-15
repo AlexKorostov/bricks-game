@@ -432,6 +432,41 @@ html, body {
   flex-shrink: 0;
 }
 
+.help-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.4rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.help-repo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.help-repo-link:hover {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.3);
+  transform: translateY(-1px);
+}
+
+.github-icon {
+  flex-shrink: 0;
+}
+
 /* --- Bottom Hint Bar --- */
 #bottom-bar {
   position: absolute;
