@@ -163,6 +163,19 @@ All renderers implement a unified contract:
 ### 4.5 Audio & Synthesized FX
 - Synthesized launch whooshes, impact clacks, harmonic match chords, pitch-ascending combo chimes, and wave clear fanfares run identically across both 2D and 3D render modes.
 
+### 4.6 HUD & Quick Restart Controls
+- **Restart Button**: Positioned in the left HUD header group, immediately to the right of the brand title and Wave indicator pill.
+- **Icon & Accessibility**: Renders as a clean circular arrow (`↻`) icon button with tooltip `"Restart Game"` and ARIA label.
+- **Behavior**:
+  - Clicking Restart instantly resets the game state back to Wave 1 with 0 score.
+  - Generates a fresh randomized central 10×10 field and fully populated 4 wall queues.
+  - Automatically closes/dismisses any active modal overlays (Wave Clear or Game Over).
+  - Re-enables player input and synchronizes the active renderer (3D or 2D).
+- **HUD Layout & Responsiveness**:
+  - **Left HUD Group**: `[BRICKS Wave N]` brand badge + `[↻]` Restart icon button.
+  - **Right HUD Group**: Score card, High Score card, Mode Toggle button (3D / 2D Eco), Sound Toggle button (`🔊`/`🔇`), and Help button (`?`).
+
+
 ---
 
 ## 5. Standard JS Project & Single-File Compilation Architecture

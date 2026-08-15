@@ -23,6 +23,7 @@ export class UIManager {
     this.modeText = document.getElementById('mode-text');
 
     this.soundBtn = document.getElementById('sound-toggle-btn');
+    this.restartBtn = document.getElementById('restart-btn');
     this.helpBtn = document.getElementById('help-btn');
     this.helpModal = document.getElementById('help-modal');
     this.closeHelpBtn = document.getElementById('close-help-btn');
@@ -35,6 +36,13 @@ export class UIManager {
   }
 
   initEvents() {
+    this.restartBtn?.addEventListener('click', () => {
+      this.hideModal();
+      if (this.onRestartGame) {
+        this.onRestartGame();
+      }
+    });
+
     this.modeToggleBtn?.addEventListener('click', () => {
       if (this.onToggleRenderMode) {
         const newMode = this.onToggleRenderMode();

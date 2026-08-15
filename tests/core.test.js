@@ -421,5 +421,24 @@ describe('GameEngine Cascades & Full Turns', () => {
     assert.strictEqual(engine.wave, 2);
     assert.strictEqual(engine.state, GAME_STATES.READY);
   });
+
+  it('resets game state and field properly on restart / startNewGame(1)', () => {
+    const engine = new GameEngine();
+    engine.startNewGame(4);
+    engine.score = 12400;
+    engine.highScore = 20000;
+    engine.state = GAME_STATES.GAME_OVER;
+
+    // Trigger restart
+    engine.startNewGame(1);
+
+    assert.strictEqual(engine.score, 0);
+    assert.strictEqual(engine.wave, 1);
+    assert.strictEqual(engine.highScore, 20000, 'High score should be preserved across restarts');
+    assert.strictEqual(engine.state, GAME_STATES.READY);
+    assert.ok(engine.grid.countFieldBricks() >= 5, 'Field should be populated with new random bricks');
+    assert.strictEqual(engine.hasAnyValidMoves(), true, 'Fresh board should have valid launch options');
+  });
 });
+
 

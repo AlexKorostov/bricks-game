@@ -59,6 +59,7 @@ export class Renderer3D {
   }
 
   clearAllBrickMeshes() {
+    this.animator.activeTweens = [];
     this.brickMeshesMap.forEach((meshGroup) => {
       this.sceneManager.scene.remove(meshGroup);
       const bMesh = meshGroup.userData.brickMesh;
