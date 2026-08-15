@@ -163,19 +163,23 @@ All renderers implement a unified contract:
 ### 4.5 Audio & Synthesized FX
 - Synthesized launch whooshes, impact clacks, harmonic match chords, pitch-ascending combo chimes, and wave clear fanfares run identically across both 2D and 3D render modes.
 
-### 4.6 HUD, Quick Restart & Reset to Wave 1 Controls
+### 4.6 HUD, Quick Restart, Reset & Fullscreen Controls
 - **Restart Current Wave Button (`↻`)**:
   - Positioned in the left HUD header group next to the brand title and Wave indicator pill.
   - Clicking restarts the **current wave**, rolling back score to `waveStartScore` and regenerating a fresh field and wall queues for that wave.
 - **Reset to 1st Wave Button (`⏮`)**:
   - Positioned adjacent to the Restart button in the left HUD group (`title="Reset to Wave 1 (New Game)"`).
   - Clicking completely resets the game to **Wave 1** with 0 score, generating a new Wave 1 field and wall queues.
+- **Fullscreen Toggle Button (`⛶` / `⤡`)**:
+  - Positioned in the right HUD control group alongside mode, sound, and help buttons.
+  - Allows entering and exiting browser fullscreen mode with a single click.
+  - Automatically updates icon and tooltip dynamically via `fullscreenchange` events (e.g. when exiting via ESC key).
 - **Game Over & Wave Modals**:
   - Wave Clear modal allows advancing to next wave (`Start Next Wave →`).
   - Game Over modal provides options to restart current wave (`Restart Wave N ↻`) or restart from the beginning (`Reset to Wave 1 ⏮`).
 - **HUD Layout & Responsiveness**:
   - **Left HUD Group**: `[BRICKS Wave N]` brand badge + `[↻]` Restart Current Wave button + `[⏮]` Reset to Wave 1 button.
-  - **Right HUD Group**: Score card, High Score card, Mode Toggle button (3D / 2D Eco), Sound Toggle button (`🔊`/`🔇`), and Help button (`?`).
+  - **Right HUD Group**: Score card, High Score card, Mode Toggle button (3D / 2D Eco), Fullscreen Toggle button (`⛶`/`⤡`), Sound Toggle button (`🔊`/`🔇`), and Help button (`?`).
 
 ### 4.7 Full Browser State Persistence (`localStorage`)
 - The active game state is automatically serialized and saved to `localStorage` (`bricks_puzzle_game_state`) on every turn completion, wave progression, restart, or reset.

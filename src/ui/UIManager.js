@@ -25,6 +25,7 @@ export class UIManager {
     this.modeText = document.getElementById('mode-text');
 
     this.soundBtn = document.getElementById('sound-toggle-btn');
+    this.fullscreenBtn = document.getElementById('fullscreen-btn');
     this.restartBtn = document.getElementById('restart-btn');
     this.resetW1Btn = document.getElementById('reset-w1-btn');
     this.helpBtn = document.getElementById('help-btn');
@@ -51,6 +52,18 @@ export class UIManager {
       if (this.onResetToWave1) {
         this.onResetToWave1();
       }
+    });
+
+    this.fullscreenBtn?.addEventListener('click', () => {
+      this.toggleFullscreen();
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+      this.updateFullscreenUI();
+    });
+
+    document.addEventListener('webkitfullscreenchange', () => {
+      this.updateFullscreenUI();
     });
 
     this.modeToggleBtn?.addEventListener('click', () => {
@@ -93,6 +106,36 @@ export class UIManager {
         this.onResetToWave1();
       }
     });
+  }
+
+  toggleFullscreen() {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    }
+  }
+
+  updateFullscreenUI() {
+    const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    if (!this.fullscreenBtn) return;
+    if (isFullscreen) {
+      this.fullscreenBtn.textContent = '⤡';
+      this.fullscreenBtn.setAttribute('title', 'Exit Fullscreen');
+      this.fullscreenBtn.setAttribute('aria-label', 'Exit Fullscreen');
+    } else {
+      this.fullscreenBtn.textContent = '⛶';
+      this.fullscreenBtn.setAttribute('title', 'Enter Fullscreen');
+      this.fullscreenBtn.setAttribute('aria-label', 'Enter Fullscreen');
+    }
   }
 
   updateRenderModeUI(mode) {
