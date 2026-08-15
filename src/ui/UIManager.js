@@ -31,6 +31,8 @@ export class UIManager {
     this.helpBtn = document.getElementById('help-btn');
     this.helpModal = document.getElementById('help-modal');
     this.closeHelpBtn = document.getElementById('close-help-btn');
+    this.hudHeader = document.getElementById('hud-header');
+    this.hudSwipeCue = document.getElementById('hud-swipe-cue');
 
     this.displayedScore = 0;
     this.targetScore = 0;
@@ -40,6 +42,7 @@ export class UIManager {
   }
 
   initEvents() {
+    this.initHudSwipeScroll();
     this.restartBtn?.addEventListener('click', () => {
       this.hideModal();
       if (this.onRestartGame) {
@@ -136,6 +139,57 @@ export class UIManager {
       this.fullscreenBtn.setAttribute('title', 'Enter Fullscreen');
       this.fullscreenBtn.setAttribute('aria-label', 'Enter Fullscreen');
     }
+  }
+
+  initHudSwipeScroll() {
+    if (!this.hudHeader || !this.hudSwipeCue) return;
+
+    const updateSwipeCue = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = this.hudHeader;
+      const hasOverflow = scrollWidth - clientWidth > 6;
+      const canScrollRight = hasOverflow && scrollLeft + clientWidth < scrollWidth - 10;
+
+      if (canScrollRight) {
+        this.hudSwipeCue.classList.remove('hidden');
+      } else {
+        this.hudSwipeCue.classList.add('hidden');
+      }
+    };
+
+    this.hudHeader.addEventListener('scroll', updateSwipeCue, { passive: true });
+    window.addEventListener('resize', updateSwipeCue);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(updateSwipeCue, 250);
+    });
+
+    this.hudSwipeCue.addEventListener('click', () => {
+      this.hudHeader.scrollBy({ left: 160, behavior: 'smooth' });
+    });
+
+    let isDown = false;
+    let startX = 0;
+    let scrollStart = 0;
+
+    this.hudHeader.addEventListener('mousedown', (e) => {
+      if (e.target.closest('button')) return;
+      isDown = true;
+      startX = e.pageX - this.hudHeader.offsetLeft;
+      scrollStart = this.hudHeader.scrollLeft;
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDown = false;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - this.hudHeader.offsetLeft;
+      const walk = (x - startX) * 1.5;
+      this.hudHeader.scrollLeft = scrollStart - walk;
+    });
+
+    setTimeout(updateSwipeCue, 150);
   }
 
   updateRenderModeUI(mode) {

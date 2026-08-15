@@ -223,9 +223,14 @@ All renderers implement a unified contract:
 - **Help Modal ("How to Play")**:
   - Explains the 4 core gameplay rules (Launch Bricks, Form Lines, Momentum Cascades, Clear the Field).
   - Includes a direct link to the public GitHub repository (`https://github.com/AlexKorostov/bricks-game`) with GitHub branding for open-source visibility.
-- **HUD Layout & Responsiveness**:
+- **HUD Layout & Mobile Horizontal Swiping**:
   - **Left HUD Group**: `[BRICKS Wave N]` brand badge + `[↻]` Restart Current Wave button + `[⏮]` Reset to Wave 1 button.
   - **Right HUD Group**: Score card, High Score card, Mode Toggle button (3D / 2D Eco), Fullscreen Toggle button (`⛶`/`⤡`), Sound Toggle button (`🔊`/`🔇`), and Help button (`?`).
+  - **Mobile Vertical / Narrow Viewport Horizontal Swiping & Affordance**:
+    - When running in vertical/portrait orientation on mobile or narrow viewports where buttons exceed the screen width, the top HUD bar supports frictionless horizontal touch swiping (`overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x`).
+    - Scrollbars remain hidden for clean aesthetics.
+    - **Visual Swipe Cue Indicator**: When controls overflow to the right, an animated floating swipe cue (`›`) and edge fade appear dynamically to signal that more controls are accessible by swiping right.
+    - Tapping the cue or swiping right scrolls smoothly to reveal the remaining buttons, and the indicator automatically fades out when the end of the bar is reached.
 
 ### 4.7 Full Browser State Persistence & Backward Compatibility Guarantee
 - **State Persistence**: The active game state is automatically serialized and saved to `localStorage` (`bricks_puzzle_game_state`) on every turn completion, wave progression, restart, or reset.
