@@ -1,0 +1,22 @@
+{
+  "name": "bricks",
+  "version": "1.0.0",
+  "description": "A pseudo-3D tactical puzzle arcade game built with Three.js",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "vite": "^8.2.1",
+    "vite-plugin-singlefile": "^2.3.3",
+    "vitest": "^4.1.10"
+  }
+}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bricks - 3D Puzzle Game</title>
+  <meta name="description" content="A pseudo-3D tactical puzzle game where you launch bricks inward from 4 walls to match lines and trigger cascading chain reactions.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-wrapper">
+    <!-- Top HUD Header -->
+    <header id="hud-header">
+      <div class="hud-group">
+        <div class="brand-badge">
+          <span class="brand-title">BRICKS</span>
+          <span id="wave-value" class="wave-pill">Wave 1</span>
+        </div>
+      </div>
+
+      <div class="hud-group">
+        <div class="stat-card">
+          <span class="stat-label">Score</span>
+          <span id="score-value" class="stat-value">0</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Best</span>
+          <span id="high-score-value" class="stat-value gold">0</span>
+        </div>
+
+        <button id="mode-toggle-btn" class="mode-toggle-btn" title="Switch to 2D Mode (Battery Saver)" aria-label="Toggle 2D/3D Mode">
+          <span id="mode-icon" class="mode-icon">⚡</span>
+          <span id="mode-text" class="mode-label">2D Mode</span>
+        </button>
+
+        <button id="sound-toggle-btn" class="icon-btn" title="Toggle Sound" aria-label="Toggle Sound">🔊</button>
+        <button id="help-btn" class="icon-btn" title="How to Play" aria-label="How to Play">?</button>
+      </div>
+    </header>
+
+    <!-- Three.js Canvas Container -->
+    <main id="canvas-container"></main>
+
+    <!-- Floating Combo Badges -->
+    <div id="combo-container"></div>
+
+    <!-- Bottom Control Hint -->
+    <footer id="bottom-bar">
+      Click active wall bricks to launch • Connect 3+ in a line to clear
+    </footer>
+
+    <!-- Result Modal (Wave Clear / Game Over) -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+      <div class="modal-dialog">
+        <h2 id="modal-title" class="modal-title">WAVE CLEARED!</h2>
+        <p id="modal-subtitle" class="modal-subtitle">All center bricks eliminated</p>
+
+        <div id="modal-stats" class="modal-stats"></div>
+
+        <button id="modal-btn" class="action-btn" data-action="nextWave">Continue →</button>
+      </div>
+    </div>
+
+    <!-- How to Play Modal -->
+    <div id="help-modal" class="modal-overlay hidden">
+      <div class="modal-dialog">
+        <h2 class="modal-title">How to Play</h2>
+        <p class="modal-subtitle">Strategic 4-way brick puzzle</p>
+
+        <div class="help-content">
+          <div class="help-step">
+            <div class="step-num">1</div>
+            <div><strong>Launch Bricks:</strong> Click any brick on the <em>innermost layer</em> of the Top, Bottom, Left, or Right walls.</div>
+          </div>
+          <div class="help-step">
+            <div class="step-num">2</div>
+            <div><strong>Form Lines:</strong> Bricks slide until hitting an obstacle. Connect <strong>3 or more</strong> of the same color in a horizontal or vertical line to clear them.</div>
+          </div>
+          <div class="help-step">
+            <div class="step-num">3</div>
+            <div><strong>Cascades:</strong> Landed bricks retain their flight momentum! When blocking bricks disappear, freed bricks slide again to create massive chain combos.</div>
+          </div>
+          <div class="help-step">
+            <div class="step-num">4</div>
+            <div><strong>Clear the Field:</strong> Empty all bricks from the central 10×10 board to complete the wave!</div>
+          </div>
+        </div>
+
+        <button id="close-help-btn" class="action-btn">Got it! Let's Play</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Entry script as ES Module -->
+  <script type="module" src="./src/index.js"></script>
+</body>
+</html>
