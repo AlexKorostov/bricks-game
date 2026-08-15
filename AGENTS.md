@@ -24,6 +24,12 @@ Welcome to the **Bricks** project! This repository contains a pseudo-3D single-p
 >
 > Rebuilding or redeploying the game to GitHub Pages must NEVER corrupt, drop, or invalidate a player's active saved session or high score. Deserialization (`Grid.fromJSON`, `Brick.fromJSON`, `GameEngine.loadState`) must handle missing/new fields defensively with safe fallback defaults.
 
+### 4. DO NOT MANUALLY DEPLOY TO GITHUB PAGES!
+> **CRITICAL DIRECTIVE**: 
+> Deployment to GitHub Pages is **fully automated via GitHub Actions** (`.github/workflows/deploy.yml`) on every commit/push to the `main` branch.
+>
+> Agents must **NEVER** switch branches to `gh-pages`, build for deployment, or push to `gh-pages` manually. Simply commit and push your changes to `main`, and GitHub Actions will automatically validate the test suite, compile `dist/index.html`, and deploy to GitHub Pages.
+
 ---
 
 ## 1. Core Principles
@@ -83,7 +89,7 @@ When handling ANY task or feature request:
 3. **Implement / Update Pure Core Logic**: Write or adjust logic in `src/core/`.
 4. **Write / Update Tests**: Add or update unit tests in `tests/core.test.js` to verify the new mechanics. Run tests (`bun test`) and ensure 100% pass rate.
 5. **Implement Presentation Layer**: Hook up Three.js rendering, animations, HUD, and input in `src/render/`, `src/input/`, `src/audio/`, and `src/ui/`.
-6. **Recompile Standalone Single-File**: Run `bun run build` to ensure `dist/bricks.html` is up to date.
+6. **Recompile Standalone Single-File**: Run `bun run build` to ensure `dist/index.html` is up to date.
 7. **Verify End-to-End**: Ensure all tests pass and browser interactions are responsive and visually polished.
 
 ---
