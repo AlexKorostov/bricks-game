@@ -631,21 +631,22 @@ html, body {
 
 .wall-slot-2d {
   background: rgba(13, 21, 39, 0.6);
-}
-
-.layer-0-interactive {
   cursor: pointer;
-  transition: background-color 0.12s ease, outline 0.12s ease;
+  transition: background-color 0.12s ease, outline 0.12s ease, opacity 0.12s ease;
 }
 
-.layer-0-interactive.hover-valid {
-  background: rgba(56, 189, 248, 0.2) !important;
+.wall-slot-2d.hover-valid {
+  background: rgba(56, 189, 248, 0.12) !important;
+}
+
+.wall-slot-2d.layer-0-interactive.hover-valid {
+  background: rgba(56, 189, 248, 0.25) !important;
   outline: 2px solid #38bdf8;
   outline-offset: -2px;
   z-index: 5;
 }
 
-.layer-0-interactive.hover-disabled {
+.wall-slot-2d.hover-disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }

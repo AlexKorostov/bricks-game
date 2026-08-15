@@ -205,11 +205,9 @@ export class Renderer2D {
   }
 
   attachSlotEvents(slot, side, lane, layer) {
-    if (layer !== 0) return;
-
     slot.addEventListener('pointerenter', () => {
       if (!this.enabled || this.gameEngine.state !== 'READY') return;
-      this.handleHover(side, lane, slot);
+      this.handleHover(side, lane);
     });
 
     slot.addEventListener('pointerleave', () => {
@@ -229,7 +227,10 @@ export class Renderer2D {
     });
   }
 
-  handleHover(side, lane, slot) {
+  handleHover(side, lane) {
+    if (this.hoveredSide === side && this.hoveredLane === lane) return;
+    this.clearHover();
+
     this.hoveredSide = side;
     this.hoveredLane = lane;
 
@@ -237,10 +238,15 @@ export class Renderer2D {
     const brick = this.gameEngine.grid.getWallBrick(side, lane, 0);
     const colorConfig = COLOR_CONFIG[brick?.color] || COLOR_CONFIG.crimson;
 
-    if (preview.canLaunch) {
-      slot.classList.add('hover-valid');
-    } else {
-      slot.classList.add('hover-disabled');
+    for (let layer = 0; layer < this.gameEngine.wallDepth; layer++) {
+      const slot = this.slotMap.get(`wall-${side}-${lane}-${layer}`);
+      if (slot) {
+        if (preview.canLaunch) {
+          slot.classList.add('hover-valid');
+        } else {
+          slot.classList.add('hover-disabled');
+        }
+      }
     }
 
     this.showAimPreview(side, lane, preview, colorConfig.hex);
@@ -248,9 +254,11 @@ export class Renderer2D {
 
   clearHover() {
     if (this.hoveredSide !== null && this.hoveredLane !== null) {
-      const slot = this.slotMap.get(`wall-${this.hoveredSide}-${this.hoveredLane}-0`);
-      if (slot) {
-        slot.classList.remove('hover-valid', 'hover-disabled');
+      for (let layer = 0; layer < this.gameEngine.wallDepth; layer++) {
+        const slot = this.slotMap.get(`wall-${this.hoveredSide}-${this.hoveredLane}-${layer}`);
+        if (slot) {
+          slot.classList.remove('hover-valid', 'hover-disabled');
+        }
       }
       this.hoveredSide = null;
       this.hoveredLane = null;

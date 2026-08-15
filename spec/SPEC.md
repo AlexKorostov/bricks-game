@@ -163,8 +163,9 @@ All renderers implement a unified contract:
     - **Left Wall (3 cols × 10 rows)**: Spans rows 4..13 and columns 1..3, aligning 1:1 with central field rows 0..9.
     - **Right Wall (3 cols × 10 rows)**: Spans rows 4..13 and columns 14..16, aligning 1:1 with central field rows 0..9.
     - **4 Corner Frames (3 cols × 3 rows)**: Top-Left, Top-Right, Bottom-Left, and Bottom-Right corner bezels.
-  - Every brick in all 4 walls and central field is an identical square with identical aspect ratio and perfect lane alignment.
-  - Layer 0 (innermost wall bricks) features interactive hover glow, cursor state, and instant aim trajectory line (connecting to target obstacle or across to opposite wall on empty lanes).
+  - **Full-Row/Column Interactive Launching (Zero Pixel Hunting)**:
+    - Hovering or clicking anywhere across the entire 3-depth channel of a wall lane/row (Layers 0, 1, or 2) activates and launches the innermost Layer 0 projectile.
+    - All slots in the hovered lane highlight synchronously with clear visual focus on Layer 0, delivering smooth, frictionless input without requiring precision clicking on a single 1×1 tile.
 - **Unified Color Palette & Glyphs Parity**:
   - Uses the **exact same 4-quadrant color definitions** as 3D:
     - Vivid Fire Red: `#e60026` (`crimson`)
