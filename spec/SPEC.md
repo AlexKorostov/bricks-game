@@ -182,11 +182,14 @@ All renderers implement a unified contract:
 
 ---
 
-## 5. Standard JS Project & Single-File Compilation Architecture
+## 5. Deterministic JS Architecture & Single-File Compilation
 
-1. **Standard Modern JavaScript Project**:
-   - Managed via **Bun** with standard `package.json` (`type: "module"`).
-   - **Three.js** is managed as a standard npm dependency (`"three": "^0.185.1"`).
+1. **Deterministic Dependency & Lockfile Architecture**:
+   - Managed via **Bun** with strictly pinned dependencies in `package.json` (exact versions without floating caret `^` ranges or `latest` tags).
+   - Strict lockfile enforcement via committed `bun.lock`.
+   - CI/CD builds strictly execute `bun install --frozen-lockfile`, guaranteeing zero unexpected version upgrades and 100% reproducible builds.
+   - Pinned Bun runtime version (`1.3.14`) across local development and GitHub Actions runners.
+   - **Three.js** is managed as an exact npm dependency (`"three": "0.185.1"`).
    - All modules use standard package imports (`import * as THREE from 'three'`).
 
 2. **Standard Single-File Compiler (Vite + `vite-plugin-singlefile`)**:
@@ -197,10 +200,10 @@ All renderers implement a unified contract:
 3. **Continuous Integration & Automated Deployment (GitHub Actions)**:
    - **Automated Testing Workflow (`.github/workflows/test.yml`)**:
      - Triggers on every `push` and `pull_request` targeting `main`, plus manual `workflow_dispatch`.
-     - Sets up Bun, installs dependencies, and runs the entire unit test suite (`bun test`).
+     - Sets up pinned Bun runtime (`1.3.14`), installs deterministic dependencies (`bun install --frozen-lockfile`), and runs the entire unit test suite (`bun test`).
    - **Automated GitHub Pages Deployment Workflow (`.github/workflows/deploy.yml`)**:
      - Triggers on `push` to `main` and manual `workflow_dispatch`.
-     - Sets up Bun, installs dependencies, executes `bun run build` to compile the standalone single-file bundle, and deploys `dist/` to the `gh-pages` branch.
+     - Sets up pinned Bun runtime (`1.3.14`), installs deterministic dependencies (`bun install --frozen-lockfile`), executes `bun run build` to compile the standalone single-file bundle, and deploys `dist/` to the `gh-pages` branch.
 
 ---
 
