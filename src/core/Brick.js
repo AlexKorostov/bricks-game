@@ -31,6 +31,20 @@ export class Brick {
     return copy;
   }
 
+  toJSON() {
+    return {
+      id: this.id,
+      color: this.color,
+      direction: this.direction ? this.direction.name : 'NONE',
+    };
+  }
+
+  static fromJSON(data) {
+    if (!data || !data.color) return null;
+    const dir = (data.direction && DIRECTIONS[data.direction]) ? DIRECTIONS[data.direction] : DIRECTIONS.NONE;
+    return new Brick(data.color, dir, data.id);
+  }
+
   static resetIdCounter() {
     nextBrickId = 1;
   }
@@ -40,3 +54,4 @@ export class Brick {
     return new Brick(randomColor, direction);
   }
 }
+

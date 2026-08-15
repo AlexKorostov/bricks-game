@@ -474,7 +474,105 @@ describe('GameEngine Cascades & Full Turns', () => {
     assert.strictEqual(restartResult.score, 3200);
     assert.ok(engine.grid.countFieldBricks() >= 6, 'Wave 2 field must be freshly populated');
   });
+
+  it('resets completely to wave 1 on resetToFirstWave()', () => {
+    const engine = new GameEngine();
+    engine.startNewGame(3);
+    engine.score = 7500;
+    engine.highScore = 10000;
+    engine.waveStartScore = 6000;
+
+    const result = engine.resetToFirstWave();
+    assert.strictEqual(engine.wave, 1);
+    assert.strictEqual(engine.score, 0);
+    assert.strictEqual(engine.waveStartScore, 0);
+    assert.strictEqual(engine.turnCount, 0);
+    assert.strictEqual(engine.highScore, 10000, 'High score must be preserved');
+    assert.strictEqual(engine.state, GAME_STATES.READY);
+    assert.strictEqual(result.wave, 1);
+    assert.strictEqual(result.score, 0);
+    assert.ok(engine.grid.countFieldBricks() >= 5);
+  });
 });
+
+describe('Serialization and State Persistence', () => {
+  it('serializes and deserializes Brick instances accurately', () => {
+    const brick = new Brick('emerald', DIRECTIONS.EAST, 'custom_brick_99');
+    const json = brick.toJSON();
+
+    assert.strictEqual(json.id, 'custom_brick_99');
+    assert.strictEqual(json.color, 'emerald');
+    assert.strictEqual(json.direction, 'EAST');
+
+    const restored = Brick.fromJSON(json);
+    assert.strictEqual(restored.id, 'custom_brick_99');
+    assert.strictEqual(restored.color, 'emerald');
+    assert.strictEqual(restored.direction.name, 'EAST');
+    assert.strictEqual(restored.direction.dx, 1);
+  });
+
+  it('serializes and deserializes Grid state perfectly', () => {
+    const grid = new Grid(10, 3);
+    grid.setCell(2, 3, new Brick('crimson', DIRECTIONS.SOUTH, 'f_1'));
+    grid.setCell(5, 5, new Brick('amber', DIRECTIONS.NONE, 'f_2'));
+    grid.setWallBrick(WALL_SIDES.LEFT, 4, 0, new Brick('cobalt', DIRECTIONS.NONE, 'w_l4_0'));
+    grid.setWallBrick(WALL_SIDES.TOP, 7, 2, new Brick('emerald', DIRECTIONS.NONE, 'w_t7_2'));
+
+    const serialized = grid.toJSON();
+    const jsonStr = JSON.stringify(serialized);
+    const restored = Grid.fromJSON(JSON.parse(jsonStr));
+
+    assert.strictEqual(restored.size, 10);
+    assert.strictEqual(restored.wallDepth, 3);
+    assert.strictEqual(restored.getCell(2, 3).id, 'f_1');
+    assert.strictEqual(restored.getCell(2, 3).color, 'crimson');
+    assert.strictEqual(restored.getCell(2, 3).direction.name, 'SOUTH');
+    assert.strictEqual(restored.getCell(5, 5).color, 'amber');
+    assert.strictEqual(restored.getCell(0, 0), null);
+
+    assert.strictEqual(restored.getWallBrick(WALL_SIDES.LEFT, 4, 0).id, 'w_l4_0');
+    assert.strictEqual(restored.getWallBrick(WALL_SIDES.TOP, 7, 2).id, 'w_t7_2');
+  });
+
+  it('serializes and restores complete GameEngine state across sessions', () => {
+    const engine1 = new GameEngine();
+    engine1.startNewGame(3);
+    engine1.score = 5600;
+    engine1.waveStartScore = 4800;
+    engine1.highScore = 9900;
+    engine1.turnCount = 14;
+
+    // Place specific bricks on field
+    engine1.grid.setCell(3, 4, new Brick('crimson', DIRECTIONS.EAST, 'target_1'));
+    engine1.grid.setCell(4, 4, new Brick('crimson', DIRECTIONS.NONE, 'target_2'));
+    engine1.grid.setWallBrick(WALL_SIDES.LEFT, 4, 0, new Brick('crimson', DIRECTIONS.NONE, 'launcher_1'));
+
+    const savedState = JSON.parse(JSON.stringify(engine1.toJSON()));
+
+    // Create a new engine instance simulating page reload
+    const engine2 = new GameEngine();
+    const loaded = engine2.loadState(savedState);
+
+    assert.strictEqual(loaded, true);
+    assert.strictEqual(engine2.wave, 3);
+    assert.strictEqual(engine2.score, 5600);
+    assert.strictEqual(engine2.waveStartScore, 4800);
+    assert.strictEqual(engine2.highScore, 9900);
+    assert.strictEqual(engine2.turnCount, 14);
+    assert.strictEqual(engine2.state, GAME_STATES.READY);
+
+    assert.strictEqual(engine2.grid.getCell(3, 4).color, 'crimson');
+    assert.strictEqual(engine2.grid.getCell(4, 4).color, 'crimson');
+    assert.strictEqual(engine2.grid.getWallBrick(WALL_SIDES.LEFT, 4, 0).color, 'crimson');
+
+    // Verify turn execution proceeds seamlessly from restored state
+    const turnResult = engine2.executeTurn(WALL_SIDES.LEFT, 4);
+    assert.strictEqual(turnResult.success, true);
+    assert.ok(turnResult.scoreGained > 0);
+    assert.strictEqual(engine2.score, 5600 + turnResult.scoreGained);
+  });
+});
+
 
 
 

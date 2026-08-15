@@ -163,20 +163,36 @@ All renderers implement a unified contract:
 ### 4.5 Audio & Synthesized FX
 - Synthesized launch whooshes, impact clacks, harmonic match chords, pitch-ascending combo chimes, and wave clear fanfares run identically across both 2D and 3D render modes.
 
-### 4.6 HUD & Quick Restart Controls
-- **Restart Button**: Positioned in the left HUD header group, immediately to the right of the brand title and Wave indicator pill.
-- **Icon & Accessibility**: Renders as a clean circular arrow (`↻`) icon button with tooltip `"Restart Game"` and ARIA label.
-- **Wave-Level Restart Behavior & Score Rollback**:
-  - **Score Snapshot**: At the beginning of each wave, the starting score is recorded (`waveStartScore`).
-  - **Restart Rollback**: Triggering a restart (via HUD Restart button `↻` or modal "Play Again ↻") resets the **current wave**:
-    - Rolls back the active score to the exact score at the beginning of the current wave (`score = waveStartScore`).
-    - Generates a fresh randomized central 10×10 field (scaled according to the current wave density) and freshly populated wall queues across all 4 sides.
-    - Preserves all-time high score intact.
-    - Automatically closes/dismisses any active modal overlays (Wave Clear or Game Over).
-    - Re-enables player input and synchronizes the active renderer (3D or 2D).
+### 4.6 HUD, Quick Restart & Reset to Wave 1 Controls
+- **Restart Current Wave Button (`↻`)**:
+  - Positioned in the left HUD header group next to the brand title and Wave indicator pill.
+  - Clicking restarts the **current wave**, rolling back score to `waveStartScore` and regenerating a fresh field and wall queues for that wave.
+- **Reset to 1st Wave Button (`⏮`)**:
+  - Positioned adjacent to the Restart button in the left HUD group (`title="Reset to Wave 1 (New Game)"`).
+  - Clicking completely resets the game to **Wave 1** with 0 score, generating a new Wave 1 field and wall queues.
+- **Game Over & Wave Modals**:
+  - Wave Clear modal allows advancing to next wave (`Start Next Wave →`).
+  - Game Over modal provides options to restart current wave (`Restart Wave N ↻`) or restart from the beginning (`Reset to Wave 1 ⏮`).
 - **HUD Layout & Responsiveness**:
-  - **Left HUD Group**: `[BRICKS Wave N]` brand badge + `[↻]` Restart icon button.
+  - **Left HUD Group**: `[BRICKS Wave N]` brand badge + `[↻]` Restart Current Wave button + `[⏮]` Reset to Wave 1 button.
   - **Right HUD Group**: Score card, High Score card, Mode Toggle button (3D / 2D Eco), Sound Toggle button (`🔊`/`🔇`), and Help button (`?`).
+
+### 4.7 Full Browser State Persistence (`localStorage`)
+- The active game state is automatically serialized and saved to `localStorage` (`bricks_puzzle_game_state`) on every turn completion, wave progression, restart, or reset.
+- **Persisted Schema**:
+  - `score`: Active game score.
+  - `waveStartScore`: Score at the beginning of the current wave.
+  - `highScore`: Persistent highest score achieved.
+  - `wave`: Active wave number.
+  - `state`: Current game state (`'READY'`, `'WAVE_CLEAR'`, `'GAME_OVER'`).
+  - `turnCount`: Number of turns played in session.
+  - `grid`: Full serialized grid state, containing:
+    - 10×10 central field cells (`id`, `color`, `direction`).
+    - 4 surrounding wall queues (`TOP`, `BOTTOM`, `LEFT`, `RIGHT`) with 10 lanes × 3 layers of bricks.
+- **Seamless Session Restoration**:
+  - When reopening or refreshing the browser, the application automatically deserializes and restores the full board layout, wall queues, active wave, score, and UI state.
+  - If the player closed during a `WAVE_CLEAR` or `GAME_OVER` modal, the modal overlay is restored appropriately.
+
 
 
 

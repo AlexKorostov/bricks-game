@@ -10,6 +10,7 @@ class BricksApp {
     this.container = document.getElementById('canvas-container');
     this.highScoreStorageKey = 'bricks_puzzle_high_score';
     this.renderModeStorageKey = 'bricks_render_mode';
+    this.gameStateStorageKey = 'bricks_puzzle_game_state';
 
     this.engine = new GameEngine();
     this.engine.highScore = parseInt(localStorage.getItem(this.highScoreStorageKey) || '0', 10);
@@ -37,14 +38,59 @@ class BricksApp {
     // 2. Initialize UI Manager
     this.ui = new UIManager({
       onRestartGame: () => this.restartCurrentWave(),
+      onResetToWave1: () => this.resetToFirstWave(),
       onNextWave: () => this.startNextWave(),
       onToggleSound: () => this.sound.toggleSound(),
       onToggleRenderMode: () => this.toggleRenderMode(),
     });
 
-    // 3. Mount active renderer and initialize game
+    // 3. Mount active renderer and restore or initialize game
     this.setRenderMode(this.renderMode);
-    this.startNewGame(1);
+
+    if (!this.loadGameState()) {
+      this.resetToFirstWave();
+    }
+  }
+
+  saveGameState() {
+    try {
+      const stateData = this.engine.toJSON();
+      localStorage.setItem(this.gameStateStorageKey, JSON.stringify(stateData));
+      if (this.engine.highScore > 0) {
+        localStorage.setItem(this.highScoreStorageKey, String(this.engine.highScore));
+      }
+    } catch (e) {
+      console.warn('Failed to save game state to localStorage', e);
+    }
+  }
+
+  loadGameState() {
+    try {
+      const saved = localStorage.getItem(this.gameStateStorageKey);
+      if (!saved) return false;
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.grid && Array.isArray(parsed.grid.field)) {
+        const ok = this.engine.loadState(parsed);
+        if (ok) {
+          this.activeRenderer.syncFromGrid(this.engine.grid);
+          this.ui.updateHUD(this.engine.score, this.engine.highScore, this.engine.wave);
+
+          if (this.engine.state === 'WAVE_CLEAR') {
+            this.ui.showWaveClearModal(this.engine.wave, 2500, this.engine.score);
+            this.activeRenderer.setEnabled(false);
+          } else if (this.engine.state === 'GAME_OVER') {
+            this.ui.showGameOverModal(this.engine.score, this.engine.wave, this.engine.highScore);
+            this.activeRenderer.setEnabled(false);
+          } else {
+            this.activeRenderer.setEnabled(true);
+          }
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to restore game state from localStorage', e);
+    }
+    return false;
   }
 
   toggleRenderMode() {
@@ -88,6 +134,15 @@ class BricksApp {
     this.activeRenderer.syncFromGrid(this.engine.grid);
     this.ui.updateHUD(this.engine.score, this.engine.highScore, this.engine.wave);
     this.activeRenderer.setEnabled(true);
+    this.saveGameState();
+  }
+
+  resetToFirstWave() {
+    this.engine.resetToFirstWave();
+    this.activeRenderer.syncFromGrid(this.engine.grid);
+    this.ui.updateHUD(this.engine.score, this.engine.highScore, this.engine.wave);
+    this.activeRenderer.setEnabled(true);
+    this.saveGameState();
   }
 
   startNewGame(wave = 1) {
@@ -95,6 +150,7 @@ class BricksApp {
     this.activeRenderer.syncFromGrid(this.engine.grid);
     this.ui.updateHUD(this.engine.score, this.engine.highScore, this.engine.wave);
     this.activeRenderer.setEnabled(true);
+    this.saveGameState();
   }
 
   startNextWave() {
@@ -103,6 +159,7 @@ class BricksApp {
     this.activeRenderer.syncFromGrid(this.engine.grid);
     this.ui.updateHUD(this.engine.score, this.engine.highScore, this.engine.wave);
     this.activeRenderer.setEnabled(true);
+    this.saveGameState();
   }
 
   async handleLaunch(side, lane) {
@@ -135,6 +192,8 @@ class BricksApp {
     } else {
       this.activeRenderer.setEnabled(true);
     }
+
+    this.saveGameState();
   }
 }
 

@@ -64,6 +64,54 @@ export class GameEngine {
     };
   }
 
+  resetToFirstWave() {
+    this.score = 0;
+    this.waveStartScore = 0;
+    this.wave = 1;
+    this.turnCount = 0;
+    this.state = GAME_STATES.READY;
+
+    // Reset grid
+    this.grid = new Grid(this.gridSize, this.wallDepth);
+    this.grid.populateWalls();
+    this.grid.populateCenter(5);
+
+    return {
+      wave: this.wave,
+      score: this.score,
+      state: this.state,
+    };
+  }
+
+  toJSON() {
+    return {
+      score: this.score,
+      waveStartScore: this.waveStartScore,
+      highScore: this.highScore,
+      wave: this.wave,
+      state: this.state,
+      turnCount: this.turnCount,
+      grid: this.grid ? this.grid.toJSON() : null,
+    };
+  }
+
+  loadState(data) {
+    if (!data) return false;
+    this.score = typeof data.score === 'number' ? data.score : 0;
+    this.waveStartScore = typeof data.waveStartScore === 'number' ? data.waveStartScore : this.score;
+    this.highScore = typeof data.highScore === 'number' ? data.highScore : 0;
+    this.wave = typeof data.wave === 'number' ? Math.max(1, data.wave) : 1;
+    this.state = data.state || GAME_STATES.READY;
+    this.turnCount = typeof data.turnCount === 'number' ? data.turnCount : 0;
+
+    if (data.grid) {
+      this.grid = Grid.fromJSON(data.grid);
+      this.gridSize = this.grid.size;
+      this.wallDepth = this.grid.wallDepth;
+    }
+    return true;
+  }
+
   getLaunchPreview(side, lane) {
     return Physics.evaluateLaunch(this.grid, side, lane);
   }

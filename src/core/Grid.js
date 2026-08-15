@@ -203,6 +203,51 @@ export class Grid {
     );
   }
 
+  toJSON() {
+    return {
+      size: this.size,
+      wallDepth: this.wallDepth,
+      field: this.field.map((row) => row.map((cell) => (cell ? cell.toJSON() : null))),
+      walls: {
+        [WALL_SIDES.TOP]: this.walls[WALL_SIDES.TOP].map((lane) => lane.map((b) => (b ? b.toJSON() : null))),
+        [WALL_SIDES.BOTTOM]: this.walls[WALL_SIDES.BOTTOM].map((lane) => lane.map((b) => (b ? b.toJSON() : null))),
+        [WALL_SIDES.LEFT]: this.walls[WALL_SIDES.LEFT].map((lane) => lane.map((b) => (b ? b.toJSON() : null))),
+        [WALL_SIDES.RIGHT]: this.walls[WALL_SIDES.RIGHT].map((lane) => lane.map((b) => (b ? b.toJSON() : null))),
+      },
+    };
+  }
+
+  static fromJSON(data) {
+    if (!data) return null;
+    const size = typeof data.size === 'number' ? data.size : GRID_SIZE;
+    const wallDepth = typeof data.wallDepth === 'number' ? data.wallDepth : WALL_DEPTH;
+    const grid = new Grid(size, wallDepth);
+
+    if (Array.isArray(data.field)) {
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const cellData = data.field[y] ? data.field[y][x] : null;
+          grid.field[y][x] = cellData ? Brick.fromJSON(cellData) : null;
+        }
+      }
+    }
+
+    if (data.walls) {
+      Object.keys(grid.walls).forEach((side) => {
+        if (Array.isArray(data.walls[side])) {
+          for (let lane = 0; lane < size; lane++) {
+            for (let layer = 0; layer < wallDepth; layer++) {
+              const bData = data.walls[side][lane] ? data.walls[side][lane][layer] : null;
+              grid.walls[side][lane][layer] = bData ? Brick.fromJSON(bData) : null;
+            }
+          }
+        }
+      });
+    }
+
+    return grid;
+  }
+
   clone() {
     const cloned = new Grid(this.size, this.wallDepth);
     for (let y = 0; y < this.size; y++) {
@@ -223,3 +268,4 @@ export class Grid {
     return cloned;
   }
 }
+

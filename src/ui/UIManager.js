@@ -1,8 +1,9 @@
 // src/ui/UIManager.js
 
 export class UIManager {
-  constructor({ onRestartGame, onNextWave, onToggleSound, onToggleRenderMode }) {
+  constructor({ onRestartGame, onResetToWave1, onNextWave, onToggleSound, onToggleRenderMode }) {
     this.onRestartGame = onRestartGame;
+    this.onResetToWave1 = onResetToWave1;
     this.onNextWave = onNextWave;
     this.onToggleSound = onToggleSound;
     this.onToggleRenderMode = onToggleRenderMode;
@@ -17,6 +18,7 @@ export class UIManager {
     this.modalSubtitle = document.getElementById('modal-subtitle');
     this.modalStats = document.getElementById('modal-stats');
     this.modalBtn = document.getElementById('modal-btn');
+    this.modalBtnSecondary = document.getElementById('modal-btn-secondary');
 
     this.modeToggleBtn = document.getElementById('mode-toggle-btn');
     this.modeIcon = document.getElementById('mode-icon');
@@ -24,6 +26,7 @@ export class UIManager {
 
     this.soundBtn = document.getElementById('sound-toggle-btn');
     this.restartBtn = document.getElementById('restart-btn');
+    this.resetW1Btn = document.getElementById('reset-w1-btn');
     this.helpBtn = document.getElementById('help-btn');
     this.helpModal = document.getElementById('help-modal');
     this.closeHelpBtn = document.getElementById('close-help-btn');
@@ -40,6 +43,13 @@ export class UIManager {
       this.hideModal();
       if (this.onRestartGame) {
         this.onRestartGame();
+      }
+    });
+
+    this.resetW1Btn?.addEventListener('click', () => {
+      this.hideModal();
+      if (this.onResetToWave1) {
+        this.onResetToWave1();
       }
     });
 
@@ -71,6 +81,16 @@ export class UIManager {
         this.onNextWave();
       } else if (action === 'restart' && this.onRestartGame) {
         this.onRestartGame();
+      } else if (action === 'resetWave1' && this.onResetToWave1) {
+        this.onResetToWave1();
+      }
+    });
+
+    this.modalBtnSecondary?.addEventListener('click', () => {
+      const action = this.modalBtnSecondary.dataset.action;
+      this.hideModal();
+      if (action === 'resetWave1' && this.onResetToWave1) {
+        this.onResetToWave1();
       }
     });
   }
@@ -152,6 +172,9 @@ export class UIManager {
     `;
     this.modalBtn.textContent = 'Start Next Wave →';
     this.modalBtn.dataset.action = 'nextWave';
+    if (this.modalBtnSecondary) {
+      this.modalBtnSecondary.classList.add('hidden');
+    }
     this.modalOverlay.classList.remove('hidden');
   }
 
@@ -173,8 +196,13 @@ export class UIManager {
         <span class="highlight">${highScore.toLocaleString()} pts</span>
       </div>
     `;
-    this.modalBtn.textContent = 'Play Again ↻';
+    this.modalBtn.textContent = `Restart Wave ${wave} ↻`;
     this.modalBtn.dataset.action = 'restart';
+    if (this.modalBtnSecondary) {
+      this.modalBtnSecondary.textContent = 'New Game (Wave 1) ⏮';
+      this.modalBtnSecondary.dataset.action = 'resetWave1';
+      this.modalBtnSecondary.classList.remove('hidden');
+    }
     this.modalOverlay.classList.remove('hidden');
   }
 
