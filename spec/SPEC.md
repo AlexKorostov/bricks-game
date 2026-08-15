@@ -181,8 +181,8 @@ All renderers implement a unified contract:
   - **Left HUD Group**: `[BRICKS Wave N]` brand badge + `[↻]` Restart Current Wave button + `[⏮]` Reset to Wave 1 button.
   - **Right HUD Group**: Score card, High Score card, Mode Toggle button (3D / 2D Eco), Fullscreen Toggle button (`⛶`/`⤡`), Sound Toggle button (`🔊`/`🔇`), and Help button (`?`).
 
-### 4.7 Full Browser State Persistence (`localStorage`)
-- The active game state is automatically serialized and saved to `localStorage` (`bricks_puzzle_game_state`) on every turn completion, wave progression, restart, or reset.
+### 4.7 Full Browser State Persistence & Backward Compatibility Guarantee
+- **State Persistence**: The active game state is automatically serialized and saved to `localStorage` (`bricks_puzzle_game_state`) on every turn completion, wave progression, restart, or reset.
 - **Persisted Schema**:
   - `score`: Active game score.
   - `waveStartScore`: Score at the beginning of the current wave.
@@ -193,6 +193,13 @@ All renderers implement a unified contract:
   - `grid`: Full serialized grid state, containing:
     - 10×10 central field cells (`id`, `color`, `direction`).
     - 4 surrounding wall queues (`TOP`, `BOTTOM`, `LEFT`, `RIGHT`) with 10 lanes × 3 layers of bricks.
+- **MANDATORY BACKWARD COMPATIBILITY DIRECTIVE**:
+  - **Zero-Loss Redeployments**: All future code modifications, refactors, feature additions, or schema expansions **MUST remain strictly backward compatible** with previously stored states.
+  - When users revisit or reload the application after a new version is rebuilt and redeployed to production, the engine must reliably load their existing session without state resets, data corruption, or crashes.
+  - **Defensive Deserialization & Safe Defaults**:
+    - `Grid.fromJSON()`, `Brick.fromJSON()`, and `GameEngine.loadState()` must validate all fields with safe fallback defaults.
+    - If new state properties are added in future versions, existing older persisted JSON objects lacking those properties must seamlessly initialize with sensible default values.
+    - If corrupted data is ever encountered, the application must catch errors gracefully without breaking the game loop.
 - **Seamless Session Restoration**:
   - When reopening or refreshing the browser, the application automatically deserializes and restores the full board layout, wall queues, active wave, score, and UI state.
   - If the player closed during a `WAVE_CLEAR` or `GAME_OVER` modal, the modal overlay is restored appropriately.

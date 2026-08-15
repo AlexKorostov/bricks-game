@@ -571,7 +571,41 @@ describe('Serialization and State Persistence', () => {
     assert.ok(turnResult.scoreGained > 0);
     assert.strictEqual(engine2.score, 5600 + turnResult.scoreGained);
   });
+
+  it('guarantees backward compatibility when deserializing legacy or partial payloads', () => {
+    const legacyState = {
+      score: 1800,
+      wave: 2,
+      // waveStartScore is missing in older schemas
+      // highScore is missing
+      // turnCount is missing
+      grid: {
+        size: 10,
+        wallDepth: 3,
+        field: Array.from({ length: 10 }, () => Array.from({ length: 10 }, () => null)),
+        walls: {
+          TOP: Array.from({ length: 10 }, () => Array.from({ length: 3 }, () => ({ color: 'crimson', direction: 'NONE' }))),
+          BOTTOM: Array.from({ length: 10 }, () => Array.from({ length: 3 }, () => ({ color: 'cobalt', direction: 'NONE' }))),
+          LEFT: Array.from({ length: 10 }, () => Array.from({ length: 3 }, () => ({ color: 'emerald', direction: 'NONE' }))),
+          RIGHT: Array.from({ length: 10 }, () => Array.from({ length: 3 }, () => ({ color: 'amber', direction: 'NONE' }))),
+        },
+      },
+    };
+
+    const engine = new GameEngine();
+    const loaded = engine.loadState(legacyState);
+
+    assert.strictEqual(loaded, true);
+    assert.strictEqual(engine.score, 1800);
+    assert.strictEqual(engine.wave, 2);
+    assert.strictEqual(engine.waveStartScore, 1800, 'Should safely fallback waveStartScore to score');
+    assert.strictEqual(engine.highScore, 0, 'Should safely fallback highScore to 0');
+    assert.strictEqual(engine.turnCount, 0, 'Should safely fallback turnCount to 0');
+    assert.strictEqual(engine.state, GAME_STATES.READY);
+    assert.strictEqual(engine.grid.getWallBrick(WALL_SIDES.LEFT, 0, 0).color, 'emerald');
+  });
 });
+
 
 
 

@@ -18,6 +18,12 @@ Welcome to the **Bricks** project! This repository contains a pseudo-3D single-p
 >
 > This guarantees that the user can simply refresh their browser on `dist/bricks.html` (or `file:///.../dist/bricks.html`) and immediately see the latest changes without manual build steps.
 
+### 3. GUARANTEE BACKWARD COMPATIBLE STATE PERSISTENCE!
+> **CRITICAL DIRECTIVE**: 
+> All changes, refactors, and feature additions **MUST remain 100% backward compatible** with previously stored game state in browser `localStorage`.
+>
+> Rebuilding or redeploying the game to GitHub Pages must NEVER corrupt, drop, or invalidate a player's active saved session or high score. Deserialization (`Grid.fromJSON`, `Brick.fromJSON`, `GameEngine.loadState`) must handle missing/new fields defensively with safe fallback defaults.
+
 ---
 
 ## 1. Core Principles
