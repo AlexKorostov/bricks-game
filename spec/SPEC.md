@@ -121,7 +121,9 @@ All renderers implement a unified contract:
 - `destroy()`: Dispose of renderer resources, listeners, geometries, textures, or timers.
 
 ### 4.2 3D Three.js Renderer (`Renderer3D`) - Glossy Acrylic Arcade Jewel Aesthetics
-- **Camera & Projection**: Isometric / high-angled tilted perspective (42° FOV, 45° elevation, 45° diagonal orientation) with camera shake on combos.
+- **Camera & Projection**:
+  - High-angled tilted isometric perspective (42° FOV, ~45° elevation angle) with camera shake on combos.
+  - Camera position (`(0, 16.2, 16.8)`) and focal target (`(0, -0.2, 1.6)`) calibrated to shift the 3D board upwards in the viewport, minimizing dead space under the top HUD buttons while keeping all 4 walls and central field in view.
 - **Tone Mapping & Exposure**:
   - `THREE.ACESFilmicToneMapping` with exposure calibrated (`toneMappingExposure: 1.18`) for rich, filmic contrast, deep saturated shadows, hot specular glints, and roll-off that preserves extreme color brilliance without clipping.
 - **High-Contrast Multi-Light Studio Rig**:

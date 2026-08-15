@@ -24,11 +24,11 @@ export class SceneManager {
     const aspect = this.container.clientWidth / this.container.clientHeight;
     this.camera = new THREE.PerspectiveCamera(42, aspect, 0.1, 100);
 
-    // Isometric-like high angled perspective
-    // Looking down at center from a slightly tilted elevated diagonal
-    this.cameraDefaultPos = new THREE.Vector3(0, 16.5, 15.5);
+    // High angled perspective framed to position board higher in viewport, minimizing top dead space
+    this.cameraTarget = new THREE.Vector3(0, -0.2, 1.6);
+    this.cameraDefaultPos = new THREE.Vector3(0, 16.2, 16.8);
     this.camera.position.copy(this.cameraDefaultPos);
-    this.camera.lookAt(0, -0.2, 0);
+    this.camera.lookAt(this.cameraTarget);
 
     this.shakeIntensity = 0;
   }
@@ -126,7 +126,7 @@ export class SceneManager {
       } else {
         this.camera.position.copy(this.cameraDefaultPos);
       }
-      this.camera.lookAt(0, -0.2, 0);
+      this.camera.lookAt(this.cameraTarget);
 
       // Call registered systems
       for (const cb of this.updateCallbacks) {
