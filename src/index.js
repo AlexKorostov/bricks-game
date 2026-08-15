@@ -177,14 +177,18 @@ class BricksApp {
       localStorage.setItem(this.highScoreStorageKey, String(this.engine.score));
     }
 
-    // Play animation sequence in active renderer
-    await this.activeRenderer.playTurnTimeline({
-      steps: turnResult.steps,
-      soundSystem: this.sound,
-    });
-
-    // Authoritatively synchronize renderer with final grid state to guarantee zero ghost meshes
-    this.activeRenderer.syncFromGrid(this.engine.grid);
+    try {
+      // Play animation sequence in active renderer
+      await this.activeRenderer.playTurnTimeline({
+        steps: turnResult.steps,
+        soundSystem: this.sound,
+      });
+    } catch (err) {
+      console.error('Animation error during turn', err);
+    } finally {
+      // Authoritatively synchronize renderer with final grid state to guarantee zero ghost meshes or missing slots
+      this.activeRenderer.syncFromGrid(this.engine.grid);
+    }
 
     this.ui.updateHUD(this.engine.score, this.engine.highScore, this.engine.wave);
 

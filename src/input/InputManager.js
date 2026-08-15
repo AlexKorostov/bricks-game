@@ -50,22 +50,37 @@ export class InputManager {
   findIntersectedWallBrick() {
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
+    // 1. Primary: Raycast against dedicated 3D lane hitboxes for instant and reliable lane detection
+    if (this.boardView && this.boardView.laneHitboxes && this.boardView.laneHitboxes.length > 0) {
+      const hitboxIntersects = this.raycaster.intersectObjects(this.boardView.laneHitboxes, false);
+      if (hitboxIntersects.length > 0) {
+        const hit = hitboxIntersects[0];
+        const { side, lane } = hit.object.userData;
+        const brick = this.gameEngine.grid.getWallBrick(side, lane, 0);
+        const group = brick ? this.brickMeshesMap.get(brick.id) : null;
+        return { side, lane, brick, group };
+      }
+    }
+
+    // 2. Fallback: Raycast against all wall brick meshes across all layers
     const clickableMeshes = [];
     const metaMap = new Map();
 
     const sides = Object.keys(this.gameEngine.grid.walls);
     for (const side of sides) {
       for (let lane = 0; lane < this.gameEngine.gridSize; lane++) {
-        const brick = this.gameEngine.grid.getWallBrick(side, lane, 0);
-        if (brick) {
-          const meshGroup = this.brickMeshesMap.get(brick.id);
-          if (meshGroup) {
-            meshGroup.traverse((child) => {
-              if (child.isMesh) {
-                clickableMeshes.push(child);
-                metaMap.set(child, { side, lane, brick, group: meshGroup });
-              }
-            });
+        for (let layer = 0; layer < this.gameEngine.wallDepth; layer++) {
+          const brick = this.gameEngine.grid.getWallBrick(side, lane, layer);
+          if (brick) {
+            const meshGroup = this.brickMeshesMap.get(brick.id);
+            if (meshGroup) {
+              meshGroup.traverse((child) => {
+                if (child.isMesh) {
+                  clickableMeshes.push(child);
+                  metaMap.set(child, { side, lane });
+                }
+              });
+            }
           }
         }
       }
@@ -74,9 +89,12 @@ export class InputManager {
     const intersects = this.raycaster.intersectObjects(clickableMeshes, false);
     if (intersects.length > 0) {
       const hit = intersects[0];
-      const meta = metaMap.get(hit.object);
-      return meta || null;
+      const { side, lane } = metaMap.get(hit.object);
+      const brick = this.gameEngine.grid.getWallBrick(side, lane, 0);
+      const group = brick ? this.brickMeshesMap.get(brick.id) : null;
+      return { side, lane, brick, group };
     }
+
     return null;
   }
 
@@ -93,16 +111,17 @@ export class InputManager {
       const { side, lane, brick, group } = hit;
       const preview = this.gameEngine.getLaunchPreview(side, lane);
 
-      if (this.hoveredWallBrick && this.hoveredWallBrick.brick.id !== brick.id) {
+      if (this.hoveredWallBrick && (this.hoveredWallBrick.side !== side || this.hoveredWallBrick.lane !== lane)) {
         this.clearHover();
       }
 
-      this.hoveredWallBrick = hit;
-      const bMesh = group.userData.brickMesh;
+      this.hoveredWallBrick = { side, lane, brick, group };
+      const bMesh = group ? group.userData?.brickMesh : null;
       if (bMesh) bMesh.setHover(true);
 
-      const config = COLOR_CONFIG[brick.color] || COLOR_CONFIG.crimson;
-      this.boardView.showAimPreview(group.position, preview, config.hex, side, lane);
+      const colorConfig = COLOR_CONFIG[brick?.color] || COLOR_CONFIG.crimson;
+      const startWorldPos = group ? group.position : this.boardView.wallToWorld(side, lane, 0);
+      this.boardView.showAimPreview(startWorldPos, preview, colorConfig.hex, side, lane);
 
       if (preview.canLaunch) {
         this.domElement.style.cursor = 'pointer';
@@ -135,9 +154,19 @@ export class InputManager {
 
   clearHover() {
     if (this.hoveredWallBrick) {
-      const bMesh = this.hoveredWallBrick.group.userData.brickMesh;
+      const group = this.hoveredWallBrick.group;
+      const bMesh = group ? group.userData?.brickMesh : null;
       if (bMesh) bMesh.setHover(false);
       this.hoveredWallBrick = null;
+    }
+    // Defensively ensure no brick mesh remains in elevated hover state
+    if (this.brickMeshesMap) {
+      this.brickMeshesMap.forEach((g) => {
+        const bm = g.userData?.brickMesh;
+        if (bm && bm.mesh && bm.mesh.position.y !== bm.height / 2) {
+          bm.setHover(false);
+        }
+      });
     }
     this.boardView.hideAimPreview();
   }

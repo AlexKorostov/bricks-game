@@ -1,6 +1,6 @@
 // src/core/Grid.js
 import { GRID_SIZE, WALL_DEPTH, WALL_SIDES, DIRECTIONS } from './Constants.js';
-import { Brick } from './Brick.js';
+import { Brick, generateUniqueBrickId } from './Brick.js';
 
 export class Grid {
   constructor(size = GRID_SIZE, wallDepth = WALL_DEPTH) {
@@ -222,12 +222,25 @@ export class Grid {
     const size = typeof data.size === 'number' ? data.size : GRID_SIZE;
     const wallDepth = typeof data.wallDepth === 'number' ? data.wallDepth : WALL_DEPTH;
     const grid = new Grid(size, wallDepth);
+    const seenIds = new Set();
+
+    const sanitizeBrick = (bData) => {
+      if (!bData) return null;
+      const brick = Brick.fromJSON(bData);
+      if (!brick) return null;
+      if (seenIds.has(brick.id)) {
+        // Automatically re-assign guaranteed unique UUID if collision detected from legacy saves
+        brick.id = generateUniqueBrickId();
+      }
+      seenIds.add(brick.id);
+      return brick;
+    };
 
     if (Array.isArray(data.field)) {
       for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
           const cellData = data.field[y] ? data.field[y][x] : null;
-          grid.field[y][x] = cellData ? Brick.fromJSON(cellData) : null;
+          grid.field[y][x] = sanitizeBrick(cellData);
         }
       }
     }
@@ -238,7 +251,7 @@ export class Grid {
           for (let lane = 0; lane < size; lane++) {
             for (let layer = 0; layer < wallDepth; layer++) {
               const bData = data.walls[side][lane] ? data.walls[side][lane][layer] : null;
-              grid.walls[side][lane][layer] = bData ? Brick.fromJSON(bData) : null;
+              grid.walls[side][lane][layer] = sanitizeBrick(bData);
             }
           }
         }

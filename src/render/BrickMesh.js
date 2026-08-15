@@ -11,83 +11,93 @@ function createDirectionTexture(directionName) {
   }
 
   const canvas = document.createElement('canvas');
-  canvas.width = 128;
-  canvas.height = 128;
+  canvas.width = 256;
+  canvas.height = 256;
   const ctx = canvas.getContext('2d');
 
-  ctx.clearRect(0, 0, 128, 128);
+  ctx.clearRect(0, 0, 256, 256);
 
-  // High-contrast beveled border
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+  // High-contrast beveled outer border
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+  ctx.lineWidth = 12;
+  ctx.strokeRect(12, 12, 232, 232);
+
+  // Subtle inner beveled shadow rim
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
   ctx.lineWidth = 6;
-  ctx.strokeRect(6, 6, 116, 116);
+  ctx.strokeRect(20, 20, 216, 216);
 
   ctx.fillStyle = '#ffffff';
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
-  ctx.lineWidth = 6;
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
+  ctx.lineWidth = 14;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
-  const cx = 64;
-  const cy = 64;
+  const cx = 128;
+  const cy = 128;
 
   if (directionName === 'NORTH') {
     ctx.beginPath();
-    ctx.moveTo(cx, 28);
-    ctx.lineTo(cx - 26, 68);
-    ctx.lineTo(cx - 11, 68);
-    ctx.lineTo(cx - 11, 98);
-    ctx.lineTo(cx + 11, 98);
-    ctx.lineTo(cx + 11, 68);
-    ctx.lineTo(cx + 26, 68);
+    ctx.moveTo(cx, 52);
+    ctx.lineTo(cx - 54, 136);
+    ctx.lineTo(cx - 24, 136);
+    ctx.lineTo(cx - 24, 200);
+    ctx.lineTo(cx + 24, 200);
+    ctx.lineTo(cx + 24, 136);
+    ctx.lineTo(cx + 54, 136);
     ctx.closePath();
     ctx.stroke();
     ctx.fill();
   } else if (directionName === 'SOUTH') {
     ctx.beginPath();
-    ctx.moveTo(cx, 100);
-    ctx.lineTo(cx - 26, 60);
-    ctx.lineTo(cx - 11, 60);
-    ctx.lineTo(cx - 11, 30);
-    ctx.lineTo(cx + 11, 30);
-    ctx.lineTo(cx + 11, 60);
-    ctx.lineTo(cx + 26, 60);
+    ctx.moveTo(cx, 204);
+    ctx.lineTo(cx - 54, 120);
+    ctx.lineTo(cx - 24, 120);
+    ctx.lineTo(cx - 24, 56);
+    ctx.lineTo(cx + 24, 56);
+    ctx.lineTo(cx + 24, 120);
+    ctx.lineTo(cx + 54, 120);
     ctx.closePath();
     ctx.stroke();
     ctx.fill();
   } else if (directionName === 'EAST') {
     ctx.beginPath();
-    ctx.moveTo(100, cy);
-    ctx.lineTo(60, cy - 26);
-    ctx.lineTo(60, cy - 11);
-    ctx.lineTo(30, cy - 11);
-    ctx.lineTo(30, cy + 11);
-    ctx.lineTo(60, cy + 11);
-    ctx.lineTo(60, cy + 26);
+    ctx.moveTo(204, cy);
+    ctx.lineTo(120, cy - 54);
+    ctx.lineTo(120, cy - 24);
+    ctx.lineTo(56, cy - 24);
+    ctx.lineTo(56, cy + 24);
+    ctx.lineTo(120, cy + 24);
+    ctx.lineTo(120, cy + 54);
     ctx.closePath();
     ctx.stroke();
     ctx.fill();
   } else if (directionName === 'WEST') {
     ctx.beginPath();
-    ctx.moveTo(28, cy);
-    ctx.lineTo(68, cy - 26);
-    ctx.lineTo(68, cy - 11);
-    ctx.lineTo(98, cy - 11);
-    ctx.lineTo(98, cy + 11);
-    ctx.lineTo(68, cy + 11);
-    ctx.lineTo(68, cy + 26);
+    ctx.moveTo(52, cy);
+    ctx.lineTo(136, cy - 54);
+    ctx.lineTo(136, cy - 24);
+    ctx.lineTo(200, cy - 24);
+    ctx.lineTo(200, cy + 24);
+    ctx.lineTo(136, cy + 24);
+    ctx.lineTo(136, cy + 54);
     ctx.closePath();
     ctx.stroke();
     ctx.fill();
   } else {
-    // Static center brick: high-contrast center jewel pip
+    // Static center brick: high-contrast center jewel pip with specular glint
     ctx.beginPath();
-    ctx.arc(cx, cy, 14, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
     ctx.fill();
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.75)';
     ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(cx - 8, cy - 8, 8, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
   }
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -118,23 +128,29 @@ export class BrickMesh {
     const config = COLOR_CONFIG[this.brick.color] || COLOR_CONFIG.crimson;
     const geometry = new THREE.BoxGeometry(this.brickSize, this.height, this.brickSize);
 
-    // High-contrast vibrant physical material matching 2D color brilliance
-    const baseMat = new THREE.MeshStandardMaterial({
+    // Glossy Acrylic Arcade Jewel physical material
+    const baseMat = new THREE.MeshPhysicalMaterial({
       color: config.threeColor,
       emissive: config.threeColor,
-      emissiveIntensity: 0.12,
-      roughness: 0.18,
-      metalness: 0.05,
+      emissiveIntensity: 0.05,
+      roughness: 0.12,
+      metalness: 0.04,
+      clearcoat: 0.95,
+      clearcoatRoughness: 0.08,
+      reflectivity: 0.75,
     });
 
     const topTexture = createDirectionTexture(this.brick.direction.name);
-    const topMat = new THREE.MeshStandardMaterial({
+    const topMat = new THREE.MeshPhysicalMaterial({
       color: config.threeColor,
       map: topTexture,
       emissive: config.threeColor,
-      emissiveIntensity: 0.12,
-      roughness: 0.15,
-      metalness: 0.05,
+      emissiveIntensity: 0.05,
+      roughness: 0.10,
+      metalness: 0.04,
+      clearcoat: 0.95,
+      clearcoatRoughness: 0.08,
+      reflectivity: 0.75,
     });
 
     this.materials = [
@@ -162,7 +178,7 @@ export class BrickMesh {
     this.materials[2].map = topTexture;
     this.materials[2].color.setHex(config.threeColor);
     this.materials[2].emissive.setHex(config.threeColor);
-    this.materials[2].emissiveIntensity = 0.12;
+    this.materials[2].emissiveIntensity = 0.05;
     this.materials[2].needsUpdate = true;
   }
 
@@ -173,12 +189,16 @@ export class BrickMesh {
       this.materials.forEach((mat) => {
         mat.emissive.setHex(config.threeColor);
         mat.emissiveIntensity = 0.65;
+        mat.clearcoat = 1.0;
+        mat.roughness = 0.06;
       });
     } else {
       this.mesh.position.y = this.height / 2;
       this.materials.forEach((mat) => {
         mat.emissive.setHex(config.threeColor);
-        mat.emissiveIntensity = 0.12;
+        mat.emissiveIntensity = 0.05;
+        mat.clearcoat = 0.95;
+        mat.roughness = 0.12;
       });
     }
   }

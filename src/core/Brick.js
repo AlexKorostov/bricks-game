@@ -1,7 +1,16 @@
 // src/core/Brick.js
 import { DIRECTIONS, COLOR_KEYS } from './Constants.js';
 
-let nextBrickId = 1;
+export function generateUniqueBrickId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 export class Brick {
   /**
@@ -13,7 +22,7 @@ export class Brick {
     if (!COLOR_KEYS.includes(color)) {
       throw new Error(`Invalid brick color: ${color}`);
     }
-    this.id = id !== null ? String(id) : `b_${nextBrickId++}`;
+    this.id = (id !== null && id !== undefined && id !== '') ? String(id) : generateUniqueBrickId();
     this.color = color;
     this.direction = direction || DIRECTIONS.NONE;
   }
@@ -42,11 +51,11 @@ export class Brick {
   static fromJSON(data) {
     if (!data || !data.color) return null;
     const dir = (data.direction && DIRECTIONS[data.direction]) ? DIRECTIONS[data.direction] : DIRECTIONS.NONE;
-    return new Brick(data.color, dir, data.id);
+    return new Brick(data.color, dir, data.id || null);
   }
 
   static resetIdCounter() {
-    nextBrickId = 1;
+    // No-op retained for backwards-compatible test fixtures with UUID generation
   }
 
   static createRandom(direction = DIRECTIONS.NONE) {

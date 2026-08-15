@@ -98,25 +98,43 @@ export class Animator {
     const layer2Brick = wallShift.shiftedQueue[1];
     const newOuterBrick = wallShift.shiftedQueue[2];
 
-    const p1 = boardView.wallToWorld(side, lane, 0);
-    const p2 = boardView.wallToWorld(side, lane, 1);
-    const p3 = boardView.wallToWorld(side, lane, 2);
+    const p0 = boardView.wallToWorld(side, lane, 0);
+    const p1 = boardView.wallToWorld(side, lane, 1);
+    const p2 = boardView.wallToWorld(side, lane, 2);
 
-    if (layer1Brick && brickMeshesMap.has(layer1Brick.id)) {
-      const m1 = brickMeshesMap.get(layer1Brick.id);
-      promises.push(this.slideMesh(m1, m1.position.clone(), p1, 0.16));
+    if (layer1Brick) {
+      let m1 = brickMeshesMap.get(layer1Brick.id);
+      if (!m1 && createBrickMeshFn) {
+        const newMesh = createBrickMeshFn(layer1Brick);
+        newMesh.group.position.copy(p1);
+        scene.add(newMesh.group);
+        brickMeshesMap.set(layer1Brick.id, newMesh.group);
+        m1 = newMesh.group;
+      }
+      if (m1) {
+        promises.push(this.slideMesh(m1, m1.position.clone(), p0, 0.16));
+      }
     }
-    if (layer2Brick && brickMeshesMap.has(layer2Brick.id)) {
-      const m2 = brickMeshesMap.get(layer2Brick.id);
-      promises.push(this.slideMesh(m2, m2.position.clone(), p2, 0.16));
+    if (layer2Brick) {
+      let m2 = brickMeshesMap.get(layer2Brick.id);
+      if (!m2 && createBrickMeshFn) {
+        const newMesh = createBrickMeshFn(layer2Brick);
+        newMesh.group.position.copy(p2);
+        scene.add(newMesh.group);
+        brickMeshesMap.set(layer2Brick.id, newMesh.group);
+        m2 = newMesh.group;
+      }
+      if (m2) {
+        promises.push(this.slideMesh(m2, m2.position.clone(), p1, 0.16));
+      }
     }
-    if (newOuterBrick) {
+    if (newOuterBrick && createBrickMeshFn) {
       const newMesh = createBrickMeshFn(newOuterBrick);
-      newMesh.group.position.copy(p3);
+      newMesh.group.position.copy(p2);
       newMesh.group.position.y += 0.45;
       scene.add(newMesh.group);
       brickMeshesMap.set(newOuterBrick.id, newMesh.group);
-      promises.push(this.slideMesh(newMesh.group, newMesh.group.position.clone(), p3, 0.2));
+      promises.push(this.slideMesh(newMesh.group, newMesh.group.position.clone(), p2, 0.2));
     }
 
     return promises;
@@ -125,22 +143,41 @@ export class Animator {
   /**
    * Helper to animate target wall pushing outward (0 -> 1, 1 -> 2, 2 ejected).
    */
-  animateTargetWallPushOut({ side, lane, wallPush, boardView, brickMeshesMap, scene }) {
+  animateTargetWallPushOut({ side, lane, wallPush, boardView, brickMeshesMap, createBrickMeshFn, scene }) {
     const promises = [];
     const bLayer1 = wallPush.updatedQueue[1];
     const bLayer2 = wallPush.updatedQueue[2];
     const ejected = wallPush.ejectedBrick;
 
+    const p0 = boardView.wallToWorld(side, lane, 0);
     const p1 = boardView.wallToWorld(side, lane, 1);
     const p2 = boardView.wallToWorld(side, lane, 2);
 
-    if (bLayer1 && brickMeshesMap.has(bLayer1.id)) {
-      const m1 = brickMeshesMap.get(bLayer1.id);
-      promises.push(this.slideMesh(m1, m1.position.clone(), p1, 0.18));
+    if (bLayer1) {
+      let m1 = brickMeshesMap.get(bLayer1.id);
+      if (!m1 && createBrickMeshFn) {
+        const newMesh = createBrickMeshFn(bLayer1);
+        newMesh.group.position.copy(p0);
+        scene.add(newMesh.group);
+        brickMeshesMap.set(bLayer1.id, newMesh.group);
+        m1 = newMesh.group;
+      }
+      if (m1) {
+        promises.push(this.slideMesh(m1, m1.position.clone(), p1, 0.18));
+      }
     }
-    if (bLayer2 && brickMeshesMap.has(bLayer2.id)) {
-      const m2 = brickMeshesMap.get(bLayer2.id);
-      promises.push(this.slideMesh(m2, m2.position.clone(), p2, 0.18));
+    if (bLayer2) {
+      let m2 = brickMeshesMap.get(bLayer2.id);
+      if (!m2 && createBrickMeshFn) {
+        const newMesh = createBrickMeshFn(bLayer2);
+        newMesh.group.position.copy(p1);
+        scene.add(newMesh.group);
+        brickMeshesMap.set(bLayer2.id, newMesh.group);
+        m2 = newMesh.group;
+      }
+      if (m2) {
+        promises.push(this.slideMesh(m2, m2.position.clone(), p2, 0.18));
+      }
     }
     if (ejected && brickMeshesMap.has(ejected.id)) {
       const ejectedMesh = brickMeshesMap.get(ejected.id);
@@ -255,6 +292,7 @@ export class Animator {
               wallPush,
               boardView,
               brickMeshesMap,
+              createBrickMeshFn,
               scene,
             });
 
@@ -333,6 +371,7 @@ export class Animator {
                         wallPush,
                         boardView,
                         brickMeshesMap,
+                        createBrickMeshFn,
                         scene,
                       })
                     );

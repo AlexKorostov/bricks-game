@@ -13,6 +13,45 @@ export class BoardView {
     this.createBoardBase();
     this.createAimIndicator();
     this.createGhostPreview();
+    this.createLaneHitboxes();
+  }
+
+  createLaneHitboxes() {
+    this.laneHitboxes = [];
+    const hitboxMaterial = new THREE.MeshBasicMaterial({
+      visible: false, // Invisible to rendering, fully active for Raycaster
+    });
+
+    const sides = [WALL_SIDES.TOP, WALL_SIDES.BOTTOM, WALL_SIDES.LEFT, WALL_SIDES.RIGHT];
+    const boxHeight = this.cellSize * 0.58;
+    const posY = boxHeight / 2;
+
+    for (const side of sides) {
+      for (let lane = 0; lane < this.gridSize; lane++) {
+        let width, depth, posX, posZ;
+        const p0 = this.wallToWorld(side, lane, 0);
+        const pLast = this.wallToWorld(side, lane, this.wallDepth - 1);
+
+        if (side === WALL_SIDES.TOP || side === WALL_SIDES.BOTTOM) {
+          width = this.cellSize * 0.98;
+          depth = this.wallDepth * this.cellSize;
+          posX = p0.x;
+          posZ = (p0.z + pLast.z) / 2;
+        } else {
+          width = this.wallDepth * this.cellSize;
+          depth = this.cellSize * 0.98;
+          posX = (p0.x + pLast.x) / 2;
+          posZ = p0.z;
+        }
+
+        const geom = new THREE.BoxGeometry(width, boxHeight, depth);
+        const mesh = new THREE.Mesh(geom, hitboxMaterial);
+        mesh.position.set(posX, posY, posZ);
+        mesh.userData = { side, lane, isLaneHitbox: true };
+        this.group.add(mesh);
+        this.laneHitboxes.push(mesh);
+      }
+    }
   }
 
   gridToWorld(gx, gy) {
@@ -52,25 +91,25 @@ export class BoardView {
     const fieldSize = this.gridSize * this.cellSize;
     const fieldGeometry = new THREE.BoxGeometry(fieldSize + 0.1, 0.3, fieldSize + 0.1);
     const fieldMaterial = new THREE.MeshStandardMaterial({
-      color: 0x1e293b,
-      roughness: 0.8,
-      metalness: 0.2,
+      color: 0x0c1322,
+      roughness: 0.88,
+      metalness: 0.12,
     });
     const fieldMesh = new THREE.Mesh(fieldGeometry, fieldMaterial);
     fieldMesh.position.y = -0.16;
     fieldMesh.receiveShadow = true;
     this.group.add(fieldMesh);
 
-    const gridHelper = new THREE.GridHelper(fieldSize, this.gridSize, 0x475569, 0x334155);
+    const gridHelper = new THREE.GridHelper(fieldSize, this.gridSize, 0x334155, 0x1e293b);
     gridHelper.position.y = 0.005;
     this.group.add(gridHelper);
 
     const frameSize = (this.gridSize + this.wallDepth * 2 + 0.8) * this.cellSize;
     const frameGeometry = new THREE.BoxGeometry(frameSize, 0.4, frameSize);
     const frameMaterial = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      roughness: 0.9,
-      metalness: 0.1,
+      color: 0x070b14,
+      roughness: 0.95,
+      metalness: 0.05,
     });
     const frameMesh = new THREE.Mesh(frameGeometry, frameMaterial);
     frameMesh.position.y = -0.22;
@@ -78,8 +117,8 @@ export class BoardView {
     this.group.add(frameMesh);
 
     const wallMat = new THREE.MeshStandardMaterial({
-      color: 0x182234,
-      roughness: 0.7,
+      color: 0x0a101d,
+      roughness: 0.85,
       metalness: 0.1,
     });
 

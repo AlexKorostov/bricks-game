@@ -6,7 +6,7 @@ export class SceneManager {
     this.container = container;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0b1120); // Deep rich navy slate
+    this.scene.background = new THREE.Color(0x070b14); // Deep rich background matching app theme
 
     this.setupCamera();
     this.setupRenderer();
@@ -43,42 +43,43 @@ export class SceneManager {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer.toneMapping = THREE.LinearToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.18;
 
     this.container.appendChild(this.renderer.domElement);
   }
 
   setupLights() {
-    // 1. Bright balanced sky/ground hemispherical fill (keeps all brick faces vivid and uniformly lit)
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x475569, 1.45);
+    // 1. Soft sky / deep navy ground hemispherical fill (preserves 3D contrast without flattening shadows)
+    const hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x0f172a, 0.65);
     hemiLight.position.set(0, 20, 0);
     this.scene.add(hemiLight);
 
-    // 2. Main Key Sun Light (Warm crisp specular highlights & soft shadows)
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    dirLight.position.set(10, 24, 12);
+    // 2. Main Key Sun Light (Warm crisp specular highlights & rich defined shadows)
+    const dirLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    dirLight.position.set(12, 25, 14);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 2048;
     dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 50;
+    dirLight.shadow.camera.far = 55;
     const shadowDist = 14;
     dirLight.shadow.camera.left = -shadowDist;
     dirLight.shadow.camera.right = shadowDist;
     dirLight.shadow.camera.top = shadowDist;
     dirLight.shadow.camera.bottom = -shadowDist;
-    dirLight.shadow.bias = -0.0005;
+    dirLight.shadow.bias = -0.0004;
+    dirLight.shadow.normalBias = 0.02;
     this.scene.add(dirLight);
 
-    // 3. Rim / Specular Accent Light (Crisp specular pop from opposite side)
-    const rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.75);
-    rimLight.position.set(-12, 16, -12);
+    // 3. Rim / Specular Accent Light (Cool cyan glint on opposite edges)
+    const rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.9);
+    rimLight.position.set(-14, 18, -14);
     this.scene.add(rimLight);
 
     // 4. Center Top Fill Point Light
-    const centerGlow = new THREE.PointLight(0xffffff, 0.5, 30);
-    centerGlow.position.set(0, 10, 0);
+    const centerGlow = new THREE.PointLight(0xffffff, 0.4, 30);
+    centerGlow.position.set(0, 12, 0);
     this.scene.add(centerGlow);
   }
 

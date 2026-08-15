@@ -120,14 +120,32 @@ All renderers implement a unified contract:
 - `setEnabled(enabled)`: Enable or disable user input / hover interactions.
 - `destroy()`: Dispose of renderer resources, listeners, geometries, textures, or timers.
 
-### 4.2 3D Three.js Renderer (`Renderer3D`)
+### 4.2 3D Three.js Renderer (`Renderer3D`) - Glossy Acrylic Arcade Jewel Aesthetics
 - **Camera & Projection**: Isometric / high-angled tilted perspective (42° FOV, 45° elevation, 45° diagonal orientation) with camera shake on combos.
-- **Lighting & Vivid Color Calibration**:
-  - High-clarity multi-light studio rig (bright Hemispherical sky/ground fill, warm crisp Directional key sun light with soft shadows, and cool cyan Rim accent light) ensuring all faces of every brick receive balanced illumination without muddy shadows.
-  - Standard sRGB canvas texture color space and Linear tone mapping (`THREE.LinearToneMapping`) to guarantee 100% color parity with the vivid, saturated palette of 2D mode (`#e60026`, `#2962ff`, `#00c853`, `#ffd600`).
-  - Clear board atmosphere without obscuring dark fog, preserving maximum contrast and visual pop across the entire playfield.
-- **Brick Meshes**: High-contrast saturated materials with subtle physical specular luster and subtle self-emissive radiance.
-- **Direction Glyphs**: Top face vector textures with high-contrast directional chevrons and outline contrast.
+- **Tone Mapping & Exposure**:
+  - `THREE.ACESFilmicToneMapping` with exposure calibrated (`toneMappingExposure: 1.18`) for rich, filmic contrast, deep saturated shadows, hot specular glints, and roll-off that preserves extreme color brilliance without clipping.
+- **High-Contrast Multi-Light Studio Rig**:
+  - **Key Directional Sun Light**: High-intensity (`2.2`) directional light with crisp PCF soft shadow mapping (`THREE.PCFSoftShadowMap`, 2048×2048 shadow maps) carving out dramatic light vs. shadow faces and cast shadows.
+  - **Balanced Hemispherical Fill**: Low-to-moderate fill (`0.65`) pairing soft sky ambient (`0xe0f2fe`) with deep midnight navy ground bounce (`0x0f172a`), maintaining deep 3D form contrast without flattening brick sides.
+  - **Cool Specular Rim Light**: Intense cool cyan/ice directional rim light (`0x7dd3fc`, `0.9` intensity) catching top and side beveled edges with a glossy specular pop.
+  - **Ambient Point Glow**: Subtle central warmth (`0xffffff`, `0.4` intensity) ensuring center board clarity.
+- **Glossy Physical Materials (`THREE.MeshPhysicalMaterial`)**:
+  - Bricks rendered with **Glossy Acrylic Arcade Jewel** physical material properties:
+    - High clearcoat layer (`clearcoat: 0.95`, `clearcoatRoughness: 0.08`) creating a deep, polished glass/lacquer sheen.
+    - Low surface roughness (`roughness: 0.12`) and minimal metalness (`metalness: 0.04`) with high reflectivity (`0.75`).
+    - Vibrant saturated base colors matching the game palette (`#e60026`, `#2962ff`, `#00c853`, `#ffd600`) with subtle saturated self-radiance and dramatic interactive hover boost (`clearcoat: 1.0`, `emissiveIntensity: 0.65`, `y` elevation +0.18).
+- **High-DPI Beveled Direction Glyphs & Top Face Textures**:
+  - 256×256 crisp vector canvas textures rendered in sRGB color space (`THREE.SRGBColorSpace`).
+  - High-contrast beveled border strokes and bold, anti-aliased directional chevrons (▲ North, ▼ South, ◄ West, ► East) and clean beveled jewel styling.
+- **Deep Obsidian Board Base & Shadow Floor**:
+  - Board floor rendered in deep obsidian/jet carbon (`0x0c1322`), wall trays (`0x0a101d`), and crisp subtle grid lines (`0x334155`), providing maximum high-relief contrast against the luminous glowing jewel bricks and receiving crisp contact shadows.
+- **Robust 40-Lane Interactive Hitboxes & Parallax-Free Precision**:
+  - The 3D scene equips all 40 wall lanes (10 lanes × 4 sides) with dedicated 3D interactive hitboxes covering the entire 3-layer channel of each lane.
+  - Hitbox height and vertical centering (`height = 0.58, posY = 0.29`) are calibrated exactly to the physical top surface of the bricks (`height = 0.55`), eliminating perspective parallax shifts and guaranteeing 1:1 mouse tracking across Left, Right, Top, and Bottom walls.
+  - Raycasting targets both the individual brick meshes and the lane hitboxes, guaranteeing that clicking or hovering anywhere over a wall lane reliably registers the intended `(side, lane)` action without dead-zones or row offsets.
+- **Authoritative Scene State Synchronization & Defensive Mesh Healing**:
+  - End-of-turn callbacks, state restorations, and mode switches execute an authoritative `syncFromGrid()` ensuring every brick in the 10×10 central field and all 120 wall slots (4 sides × 10 lanes × 3 layers) has an exact, fully positioned 3D mesh.
+  - Wall animations defensively self-heal missing meshes during shifts and pushes, preventing visual holes or orphan states.
 - **Aim Trajectory Preview**: Laser targeting line and translucent ghost box indicating exact landing cell (or spanning across to opposite wall on empty lanes).
 - **Particles & FX**: 3D explosion particle bursts on matches and wave clear celebrations.
 - **Lifecycle & Power Optimization**: When switched away (deactivated), the 3D render loop (`requestAnimationFrame`) is completely paused, stopping GPU utilization.
@@ -254,8 +272,8 @@ All renderers implement a unified contract:
 - `package.json`: Project manifest, scripts (`dev`, `build`, `test`), and dependencies (`three`, `vite`, `vite-plugin-singlefile`, `vitest`).
 - `vite.config.js`: Vite & Vitest configuration bundling the single-file HTML game to `dist/index.html`.
 - `src/core/Constants.js`: Definitions for grid size, wall depth, distinct 4-quadrant color palette, directions, and score multipliers.
-- `src/core/Brick.js`: Brick data model and direction state.
-- `src/core/Grid.js`: Board state management, `popAndShiftWall()`, and `pushInnermostWall()`.
+- `src/core/Brick.js`: Brick data model with standard cryptographic UUIDs (`crypto.randomUUID()`), direction vectors, and serialization.
+- `src/core/Grid.js`: Board state management, `popAndShiftWall()`, `pushInnermostWall()`, and defensive deserialization deduplication ensuring no ID collisions across sessions or game loads.
 - `src/core/Physics.js`: Launch feasibility, obstacle landing calculation, and cascade simultaneous slides with off-board wall push.
 - `src/core/Matcher.js`: Straight line match-3 detection and run scoring.
 - `src/core/GameEngine.js`: Equilibrium loop turn orchestration, cascade chains, scoring, wave lifecycle.

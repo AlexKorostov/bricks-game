@@ -604,6 +604,80 @@ describe('Serialization and State Persistence', () => {
     assert.strictEqual(engine.state, GAME_STATES.READY);
     assert.strictEqual(engine.grid.getWallBrick(WALL_SIDES.LEFT, 0, 0).color, 'emerald');
   });
+
+  it('migrates legacy save with duplicate or missing IDs and re-saves with 100% unique IDs', () => {
+    // Legacy save with duplicated IDs across different walls and fields
+    const legacyStateWithDuplicateIds = {
+      score: 2000,
+      wave: 2,
+      grid: {
+        size: 10,
+        wallDepth: 3,
+        field: [
+          [null, null, null, null, null, { id: 'b_1', color: 'crimson', direction: 'NONE' }, null, null, null, null],
+          ...Array.from({ length: 9 }, () => Array.from({ length: 10 }, () => null)),
+        ],
+        walls: {
+          TOP: Array.from({ length: 10 }, () => Array.from({ length: 3 }, () => ({ id: 'b_1', color: 'crimson', direction: 'NONE' }))),
+          BOTTOM: Array.from({ length: 10 }, () => Array.from({ length: 3 }, () => ({ id: 'b_1', color: 'cobalt', direction: 'NONE' }))),
+          LEFT: Array.from({ length: 10 }, () => Array.from({ length: 3 }, () => ({ id: 'b_1', color: 'emerald', direction: 'NONE' }))),
+          RIGHT: Array.from({ length: 10 }, () => Array.from({ length: 3 }, () => ({ id: 'b_1', color: 'amber', direction: 'NONE' }))),
+        },
+      },
+    };
+
+    const engine = new GameEngine();
+    const loaded = engine.loadState(legacyStateWithDuplicateIds);
+    assert.strictEqual(loaded, true);
+
+    // Collect all IDs in memory after load
+    const inMemoryIds = [];
+    for (let y = 0; y < 10; y++) {
+      for (let x = 0; x < 10; x++) {
+        const b = engine.grid.getCell(x, y);
+        if (b) inMemoryIds.push(b.id);
+      }
+    }
+    Object.keys(engine.grid.walls).forEach((side) => {
+      for (let lane = 0; lane < 10; lane++) {
+        for (let layer = 0; layer < 3; layer++) {
+          const b = engine.grid.getWallBrick(side, lane, layer);
+          if (b) inMemoryIds.push(b.id);
+        }
+      }
+    });
+
+    // 1 field brick + 120 wall bricks = 121 bricks
+    assert.strictEqual(inMemoryIds.length, 121);
+    const uniqueInMemorySet = new Set(inMemoryIds);
+    assert.strictEqual(uniqueInMemorySet.size, 121, 'All loaded and sanitized bricks must have unique IDs in memory');
+
+    // Execute a turn to spawn new replacement bricks
+    const turn = engine.executeTurn(WALL_SIDES.LEFT, 0);
+    assert.strictEqual(turn.success, true);
+
+    // Re-save to JSON
+    const resavedJson = engine.toJSON();
+    const resavedIds = [];
+
+    for (let y = 0; y < 10; y++) {
+      for (let x = 0; x < 10; x++) {
+        const cell = resavedJson.grid.field[y][x];
+        if (cell) resavedIds.push(cell.id);
+      }
+    }
+    Object.keys(resavedJson.grid.walls).forEach((side) => {
+      for (let lane = 0; lane < 10; lane++) {
+        for (let layer = 0; layer < 3; layer++) {
+          const b = resavedJson.grid.walls[side][lane][layer];
+          if (b) resavedIds.push(b.id);
+        }
+      }
+    });
+
+    const uniqueResavedSet = new Set(resavedIds);
+    assert.strictEqual(uniqueResavedSet.size, resavedIds.length, 'Re-saved game state JSON must have 100% unique IDs across all bricks');
+  });
 });
 
 
