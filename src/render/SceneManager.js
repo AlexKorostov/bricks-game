@@ -22,11 +22,13 @@ export class SceneManager {
 
   setupCamera() {
     const aspect = this.container.clientWidth / this.container.clientHeight;
-    this.camera = new THREE.PerspectiveCamera(42, aspect, 0.1, 100);
+    const baseFov = 33;
+    const fov = aspect < 1.05 ? baseFov / Math.max(aspect * 0.95, 0.55) : baseFov;
+    this.camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 100);
 
-    // High angled perspective framed to position board higher in viewport, minimizing top dead space
-    this.cameraTarget = new THREE.Vector3(0, -0.2, 1.6);
-    this.cameraDefaultPos = new THREE.Vector3(0, 16.2, 16.8);
+    // Near-orthographic top-down isometric perspective calibrated to fit screen height perfectly
+    this.cameraTarget = new THREE.Vector3(0, -0.2, 0.8);
+    this.cameraDefaultPos = new THREE.Vector3(0, 27.5, 15.0);
     this.camera.position.copy(this.cameraDefaultPos);
     this.camera.lookAt(this.cameraTarget);
 
@@ -44,19 +46,19 @@ export class SceneManager {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.18;
+    this.renderer.toneMappingExposure = 0.98;
 
     this.container.appendChild(this.renderer.domElement);
   }
 
   setupLights() {
-    // 1. Soft sky / deep navy ground hemispherical fill (preserves 3D contrast without flattening shadows)
-    const hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x0f172a, 0.65);
+    // 1. Balanced sky / ground hemispherical fill
+    const hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x0f172a, 0.50);
     hemiLight.position.set(0, 20, 0);
     this.scene.add(hemiLight);
 
-    // 2. Main Key Sun Light (Warm crisp specular highlights & rich defined shadows)
-    const dirLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    // 2. Main Key Sun Light (Warm, calm specular highlights & soft shadows)
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
     dirLight.position.set(12, 25, 14);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
@@ -72,13 +74,13 @@ export class SceneManager {
     dirLight.shadow.normalBias = 0.02;
     this.scene.add(dirLight);
 
-    // 3. Rim / Specular Accent Light (Cool cyan glint on opposite edges)
-    const rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.9);
+    // 3. Rim / Specular Accent Light (Subtle cool rim on opposite edges)
+    const rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.45);
     rimLight.position.set(-14, 18, -14);
     this.scene.add(rimLight);
 
     // 4. Center Top Fill Point Light
-    const centerGlow = new THREE.PointLight(0xffffff, 0.4, 30);
+    const centerGlow = new THREE.PointLight(0xffffff, 0.2, 30);
     centerGlow.position.set(0, 12, 0);
     this.scene.add(centerGlow);
   }
@@ -96,7 +98,16 @@ export class SceneManager {
     const height = this.container.clientHeight;
     if (width === 0 || height === 0) return;
 
-    this.camera.aspect = width / height;
+    const aspect = width / height;
+    this.camera.aspect = aspect;
+
+    const baseFov = 33;
+    if (aspect < 1.05) {
+      this.camera.fov = baseFov / Math.max(aspect * 0.95, 0.55);
+    } else {
+      this.camera.fov = baseFov;
+    }
+
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
   }

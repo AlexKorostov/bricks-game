@@ -1,5 +1,6 @@
 // src/render/BoardView.js
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { GRID_SIZE, WALL_DEPTH, WALL_SIDES } from '../core/Constants.js';
 
 export class BoardView {
@@ -91,23 +92,23 @@ export class BoardView {
     const fieldSize = this.gridSize * this.cellSize;
     const fieldGeometry = new THREE.BoxGeometry(fieldSize + 0.1, 0.3, fieldSize + 0.1);
     const fieldMaterial = new THREE.MeshStandardMaterial({
-      color: 0x0c1322,
-      roughness: 0.88,
-      metalness: 0.12,
+      color: 0x16243b,
+      roughness: 0.85,
+      metalness: 0.08,
     });
     const fieldMesh = new THREE.Mesh(fieldGeometry, fieldMaterial);
     fieldMesh.position.y = -0.16;
     fieldMesh.receiveShadow = true;
     this.group.add(fieldMesh);
 
-    const gridHelper = new THREE.GridHelper(fieldSize, this.gridSize, 0x334155, 0x1e293b);
+    const gridHelper = new THREE.GridHelper(fieldSize, this.gridSize, 0x475569, 0x27364f);
     gridHelper.position.y = 0.005;
     this.group.add(gridHelper);
 
     const frameSize = (this.gridSize + this.wallDepth * 2 + 0.8) * this.cellSize;
     const frameGeometry = new THREE.BoxGeometry(frameSize, 0.4, frameSize);
     const frameMaterial = new THREE.MeshStandardMaterial({
-      color: 0x070b14,
+      color: 0x090f1a,
       roughness: 0.95,
       metalness: 0.05,
     });
@@ -117,9 +118,9 @@ export class BoardView {
     this.group.add(frameMesh);
 
     const wallMat = new THREE.MeshStandardMaterial({
-      color: 0x0a101d,
+      color: 0x0e1726,
       roughness: 0.85,
-      metalness: 0.1,
+      metalness: 0.08,
     });
 
     const createTray = (width, depth, posX, posZ) => {
@@ -141,36 +142,61 @@ export class BoardView {
   }
 
   createAimIndicator() {
-    const lineGeom = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(0, 0.2, 0),
-      new THREE.Vector3(0, 0.2, 1),
-    ]);
-    const lineMat = new THREE.LineDashedMaterial({
+    // 1. Wide Central Laser Beam (bold, prominent line in the brick's matching color)
+    const beamGeom = new THREE.PlaneGeometry(1, 1);
+    beamGeom.rotateX(-Math.PI / 2);
+    const beamMat = new THREE.MeshBasicMaterial({
       color: 0x38bdf8,
-      dashSize: 0.35,
-      gapSize: 0.15,
-      linewidth: 3,
       transparent: true,
       opacity: 0.85,
+      depthWrite: false,
+      side: THREE.DoubleSide,
     });
-    this.aimLine = new THREE.Line(lineGeom, lineMat);
-    this.aimLine.computeLineDistances();
-    this.aimLine.visible = false;
-    this.group.add(this.aimLine);
+    this.aimBeam = new THREE.Mesh(beamGeom, beamMat);
+    this.aimBeam.position.y = 0.020;
+    this.aimBeam.visible = false;
+    this.group.add(this.aimBeam);
+
+    // 2. High-Intensity Laser Core Line
+    const coreGeom = new THREE.PlaneGeometry(1, 1);
+    coreGeom.rotateX(-Math.PI / 2);
+    const coreMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.95,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+    this.aimCore = new THREE.Mesh(coreGeom, coreMat);
+    this.aimCore.position.y = 0.022;
+    this.aimCore.visible = false;
+    this.group.add(this.aimCore);
   }
 
   createGhostPreview() {
     const brickSize = this.cellSize * 0.88;
-    const geom = new THREE.BoxGeometry(brickSize, this.cellSize * 0.55, brickSize);
+    const height = this.cellSize * 0.55;
+    const geom = new RoundedBoxGeometry(brickSize, height, brickSize, 5, 0.16);
     const mat = new THREE.MeshBasicMaterial({
       color: 0x38bdf8,
-      wireframe: true,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.32,
+      depthWrite: false,
     });
     this.ghostMesh = new THREE.Mesh(geom, mat);
-    this.ghostMesh.position.y = (this.cellSize * 0.55) / 2 + 0.02;
+    this.ghostMesh.position.y = height / 2 + 0.02;
     this.ghostMesh.visible = false;
+
+    // Glowing edge wireframe (thresholdAngle: 24 prevents internal tessellation lines on fillets)
+    const edges = new THREE.EdgesGeometry(geom, 24);
+    const lineMat = new THREE.LineBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.8,
+    });
+    this.ghostWire = new THREE.LineSegments(edges, lineMat);
+    this.ghostMesh.add(this.ghostWire);
+
     this.group.add(this.ghostMesh);
   }
 
@@ -213,19 +239,45 @@ export class BoardView {
       return;
     }
 
-    const points = [
-      new THREE.Vector3(startWorldPos.x, 0.25, startWorldPos.z),
-      new THREE.Vector3(endWorldPos.x, 0.25, endWorldPos.z),
-    ];
-    this.aimLine.geometry.setFromPoints(points);
-    this.aimLine.computeLineDistances();
-    this.aimLine.material.color.set(colorHex);
-    this.aimLine.material.opacity = preview.canLaunch ? 0.85 : 0.45;
-    this.aimLine.visible = true;
+    const midX = (startWorldPos.x + endWorldPos.x) / 2;
+    const midZ = (startWorldPos.z + endWorldPos.z) / 2;
+    const dx = endWorldPos.x - startWorldPos.x;
+    const dz = endWorldPos.z - startWorldPos.z;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+
+    if (dist > 0.05) {
+      const isHorizontal = Math.abs(dx) >= Math.abs(dz);
+      const beamWidth = this.cellSize * 0.20;
+      const coreWidth = this.cellSize * 0.08;
+
+      this.aimBeam.position.set(midX, 0.020, midZ);
+      this.aimCore.position.set(midX, 0.022, midZ);
+
+      if (isHorizontal) {
+        this.aimBeam.scale.set(dist, 1, beamWidth);
+        this.aimCore.scale.set(dist, 1, coreWidth);
+      } else {
+        this.aimBeam.scale.set(beamWidth, 1, dist);
+        this.aimCore.scale.set(coreWidth, 1, dist);
+      }
+
+      this.aimBeam.material.color.set(colorHex);
+      this.aimBeam.material.opacity = preview.canLaunch ? 0.85 : 0.40;
+      this.aimBeam.visible = true;
+
+      this.aimCore.material.color.set(colorHex);
+      this.aimCore.material.opacity = preview.canLaunch ? 0.95 : 0.50;
+      this.aimCore.visible = true;
+    } else {
+      this.aimBeam.visible = false;
+      this.aimCore.visible = false;
+    }
 
     if (showGhost) {
-      this.ghostMesh.position.set(endWorldPos.x, (this.cellSize * 0.55) / 2 + 0.02, endWorldPos.z);
+      const height = this.cellSize * 0.55;
+      this.ghostMesh.position.set(endWorldPos.x, height / 2 + 0.02, endWorldPos.z);
       this.ghostMesh.material.color.set(colorHex);
+      this.ghostWire.material.color.set(colorHex);
       this.ghostMesh.visible = true;
     } else {
       this.ghostMesh.visible = false;
@@ -233,7 +285,8 @@ export class BoardView {
   }
 
   hideAimPreview() {
-    this.aimLine.visible = false;
-    this.ghostMesh.visible = false;
+    if (this.aimBeam) this.aimBeam.visible = false;
+    if (this.aimCore) this.aimCore.visible = false;
+    if (this.ghostMesh) this.ghostMesh.visible = false;
   }
 }

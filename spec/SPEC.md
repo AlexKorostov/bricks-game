@@ -1,7 +1,9 @@
 # Game Specification: "Bricks"
 
 ## 1. Overview & Core Objective
-**"Bricks"** is a pseudo-3D tactical puzzle arcade game rendered with Three.js.
+**"Bricks"** is a pseudo-3D tactical puzzle arcade game rendered with Three.js and modern web technologies.
+The visual presentation in both 2D and 3D modes is purposefully crafted around a signature **"Glossy Candy / Jewel Tile"** aesthetic: delicious solid colors, smooth pillowy rounded corners, satiny beveled highlights, and tactile carved directional glyphs.
+
 The player clears bricks from a central **10×10 grid** by launching bricks inward from 4 surrounding walls (Top, Bottom, Left, Right). 
 
 ### Primary Goal
@@ -120,27 +122,35 @@ All renderers implement a unified contract:
 - `setEnabled(enabled)`: Enable or disable user input / hover interactions.
 - `destroy()`: Dispose of renderer resources, listeners, geometries, textures, or timers.
 
-### 4.2 3D Three.js Renderer (`Renderer3D`) - Glossy Acrylic Arcade Jewel Aesthetics
+### 4.2 3D Three.js Renderer (`Renderer3D`) - Tactile Glossy Candy & Jewel Tile Aesthetics
 - **Camera & Projection**:
-  - High-angled tilted isometric perspective (42° FOV, ~45° elevation angle) with camera shake on combos.
-  - Camera position (`(0, 16.2, 16.8)`) and focal target (`(0, -0.2, 1.6)`) calibrated to shift the 3D board upwards in the viewport, minimizing dead space under the top HUD buttons while keeping all 4 walls and central field in view.
+  - Near-orthographic, top-down isometric perspective (33° FOV, ~63° elevation angle) with camera shake on combos.
+  - Camera position (`(0, 27.5, 15.0)`) and focal target (`(0, -0.2, 0.8)`) calibrated to fit the entire board and all 4 wall layers comfortably within the screen height with generous margins under the top HUD bar and on desktop/laptop displays.
+  - Responsive framing automatically adapts on resize, ensuring both width and height remain completely in view across aspect ratios.
 - **Tone Mapping & Exposure**:
-  - `THREE.ACESFilmicToneMapping` with exposure calibrated (`toneMappingExposure: 1.18`) for rich, filmic contrast, deep saturated shadows, hot specular glints, and roll-off that preserves extreme color brilliance without clipping.
-- **High-Contrast Multi-Light Studio Rig**:
-  - **Key Directional Sun Light**: High-intensity (`2.2`) directional light with crisp PCF soft shadow mapping (`THREE.PCFSoftShadowMap`, 2048×2048 shadow maps) carving out dramatic light vs. shadow faces and cast shadows.
-  - **Balanced Hemispherical Fill**: Low-to-moderate fill (`0.65`) pairing soft sky ambient (`0xe0f2fe`) with deep midnight navy ground bounce (`0x0f172a`), maintaining deep 3D form contrast without flattening brick sides.
-  - **Cool Specular Rim Light**: Intense cool cyan/ice directional rim light (`0x7dd3fc`, `0.9` intensity) catching top and side beveled edges with a glossy specular pop.
-  - **Ambient Point Glow**: Subtle central warmth (`0xffffff`, `0.4` intensity) ensuring center board clarity.
-- **Glossy Physical Materials (`THREE.MeshPhysicalMaterial`)**:
-  - Bricks rendered with **Glossy Acrylic Arcade Jewel** physical material properties:
-    - High clearcoat layer (`clearcoat: 0.95`, `clearcoatRoughness: 0.08`) creating a deep, polished glass/lacquer sheen.
-    - Low surface roughness (`roughness: 0.12`) and minimal metalness (`metalness: 0.04`) with high reflectivity (`0.75`).
-    - Vibrant saturated base colors matching the game palette (`#e60026`, `#2962ff`, `#00c853`, `#ffd600`) with subtle saturated self-radiance and dramatic interactive hover boost (`clearcoat: 1.0`, `emissiveIntensity: 0.65`, `y` elevation +0.18).
-- **High-DPI Beveled Direction Glyphs & Top Face Textures**:
+  - `THREE.ACESFilmicToneMapping` with balanced exposure (`toneMappingExposure: 0.98`) for calm, comfortable contrast without harsh blown-out highlights or eye fatigue.
+- **Calm, High-Clarity Multi-Light Studio Rig**:
+  - **Key Directional Sun Light**: Warm directional light (`1.4` intensity) with crisp PCF soft shadow mapping (`THREE.PCFSoftShadowMap`, 2048×2048 shadow maps) carving out clean, calm 3D depth.
+  - **Balanced Hemispherical Fill**: Low-to-moderate fill (`0.50`) pairing soft sky ambient (`0xe0f2fe`) with deep midnight navy ground bounce (`0x0f172a`), preserving clear 3D definition.
+  - **Soft Cyan Rim Light**: Subtle cool directional rim light (`0x7dd3fc`, `0.45` intensity) catching top beveled edges.
+  - **Ambient Point Glow**: Subtle central warmth (`0xffffff`, `0.2` intensity) ensuring center board clarity.
+- **Refined Physical Materials & Rounded Corner Geometry (`RoundedBoxGeometry` / `MeshPhysicalMaterial`)**:
+  - Bricks rendered with **pronounced rounded vertical corners and smooth beveled edges** (`RoundedBoxGeometry`, corner radius `0.16`, 5 bevel segments) delivering a smooth, tactile candy/jewel tile feel.
+  - Satiny physical material properties:
+    - Satiny clearcoat layer (`clearcoat: 0.65`, `clearcoatRoughness: 0.18`, `roughness: 0.28`, `reflectivity: 0.50`).
+    - **100% Exact Color Parity with 2D Mode**:
+      - Crimson: `#e60026` (`0xe60026`)
+      - Cobalt: `#2962ff` (`0x2962ff`)
+      - Emerald: `#00c853` (`0x00c853`)
+      - Amber: `#ffd600` (`0xffd600`)
+    - Zero resting self-emission for calm, glare-free viewing, with responsive interactive hover illumination (`clearcoat: 1.0`, `emissiveIntensity: 0.55`, `y` elevation +0.18).
+- **High-DPI Solid Color Top Face Textures with Deep Carved Indent Arrows**:
   - 256×256 crisp vector canvas textures rendered in sRGB color space (`THREE.SRGBColorSpace`).
-  - High-contrast beveled border strokes and bold, anti-aliased directional chevrons (▲ North, ▼ South, ◄ West, ► East) and clean beveled jewel styling.
-- **Deep Obsidian Board Base & Shadow Floor**:
-  - Board floor rendered in deep obsidian/jet carbon (`0x0c1322`), wall trays (`0x0a101d`), and crisp subtle grid lines (`0x334155`), providing maximum high-relief contrast against the luminous glowing jewel bricks and receiving crisp contact shadows.
+  - Top face features a **uniform, vibrant solid color face of identical intensity** throughout (matching 2D mode) with a rounded beveled perimeter highlight.
+  - **Deep Carved Indent Arrows**: Directional moving bricks render their directional arrows (▲ North, ▼ South, ◄ West, ► East) as **deep carved/sunken indents** with dark cast shadow cavities, inner shadow bevels, and lower specular lip highlights catching the light.
+  - Static obstacles and resting wall bricks are completely solid with **zero center dots or markings**, identical to 2D mode.
+- **Refined Navy-Slate Board Base & Floor (2D Parity)**:
+  - Central field floor rendered in calm, refined **navy-slate** (`0x16243b`), directly matching the 2D board background (`#131c2e`) with crisp slate grid lines (`0x475569` / `0x27364f`), softly recessed wall trays (`0x0e1726`), and deep chassis frame (`0x090f1a`).
 - **Robust 40-Lane Interactive Hitboxes & Parallax-Free Precision**:
   - The 3D scene equips all 40 wall lanes (10 lanes × 4 sides) with dedicated 3D interactive hitboxes covering the entire 3-layer channel of each lane.
   - Hitbox height and vertical centering (`height = 0.58, posY = 0.29`) are calibrated exactly to the physical top surface of the bricks (`height = 0.55`), eliminating perspective parallax shifts and guaranteeing 1:1 mouse tracking across Left, Right, Top, and Bottom walls.
@@ -148,11 +158,14 @@ All renderers implement a unified contract:
 - **Authoritative Scene State Synchronization & Defensive Mesh Healing**:
   - End-of-turn callbacks, state restorations, and mode switches execute an authoritative `syncFromGrid()` ensuring every brick in the 10×10 central field and all 120 wall slots (4 sides × 10 lanes × 3 layers) has an exact, fully positioned 3D mesh.
   - Wall animations defensively self-heal missing meshes during shifts and pushes, preventing visual holes or orphan states.
-- **Aim Trajectory Preview**: Laser targeting line and translucent ghost box indicating exact landing cell (or spanning across to opposite wall on empty lanes).
+- **Aim Trajectory Laser Beam & High-Visibility Landing Indicator**:
+  - Features a **bold, wide luminous laser beam** (`width = 0.20` cell width) with an inner high-intensity laser core running down the center of the lane in the brick's matching color.
+  - Spans cleanly from the active wall mouth to the obstacle impact point (or across to the opposite wall on empty lanes) without obscuring the board floor.
+  - Target landing cell is illuminated with a **matching rounded 3D ghost landing pad** (`RoundedBoxGeometry`, corner radius `0.16`, translucent volume with glowing silhouette) for seamless visual consistency.
 - **Particles & FX**: 3D explosion particle bursts on matches and wave clear celebrations.
 - **Lifecycle & Power Optimization**: When switched away (deactivated), the 3D render loop (`requestAnimationFrame`) is completely paused, stopping GPU utilization.
 
-### 4.3 2D High-Efficiency Battery-Saver Renderer (`Renderer2D`)
+### 4.3 2D High-Efficiency Battery-Saver Renderer (`Renderer2D`) - Crisp Candy Tile Aesthetics
 - **Ultra-Low Power**: Built using lightweight semantic HTML/DOM and CSS transforms. Zero WebGL/GPU overhead, maximizing battery life on laptops and mobile devices.
 - **Idle Power**: When idle (no active tweens), 0 `requestAnimationFrame` cycles are executed. Animations only run on demand during turns.
 - **Unified 16×16 Grid Board & Wall Layout**:
