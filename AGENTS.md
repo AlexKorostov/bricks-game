@@ -14,9 +14,9 @@ Welcome to the **Bricks** project! This repository contains a pseudo-3D single-p
 
 ### 2. ALWAYS RECOMPILE THE STANDALONE BUNDLE!
 > **CRITICAL DIRECTIVE**: 
-> Whenever ANY change is made to source files in `src/`, `style.css`, or `index.html`, **ALWAYS run `bun run build`** to recompile `dist/bricks.html` (and `dist/index.html`).
+> Whenever ANY change is made to source files in `src/`, `style.css`, or `index.html`, **ALWAYS run `bun run build`** to recompile `dist/index.html`.
 >
-> This guarantees that the user can simply refresh their browser on `dist/bricks.html` (or `file:///.../dist/bricks.html`) and immediately see the latest changes without manual build steps.
+> This guarantees that the user can simply refresh their browser on `dist/index.html` (or `file:///.../dist/index.html`) and immediately see the latest changes without manual build steps.
 
 ### 3. GUARANTEE BACKWARD COMPATIBLE STATE PERSISTENCE!
 > **CRITICAL DIRECTIVE**: 
@@ -34,7 +34,7 @@ Welcome to the **Bricks** project! This repository contains a pseudo-3D single-p
    - Code changes that are not documented in `spec/SPEC.md` violate project policy.
 
 2. **Always Fresh Standalone Build**:
-   - `dist/bricks.html` is the primary artifact for playing the game offline.
+   - `dist/index.html` is the primary artifact for playing the game offline.
    - Any code modifications must be followed by `bun run build`.
 
 3. **Decoupled Architecture**:
@@ -66,8 +66,7 @@ Welcome to the **Bricks** project! This repository contains a pseudo-3D single-p
 │   ├── ui/                    # HUD, menus, game over screens, combo badges
 │   └── index.js               # Entry point wiring Core, Render, Input, Audio, and UI
 ├── dist/
-│   ├── bricks.html            # Compiled 100% standalone offline single-file game
-│   └── index.html             # Standalone index copy
+│   └── index.html             # Compiled 100% standalone offline single-file game
 ├── tests/
 │   └── core.test.js           # Vitest unit test suite covering all mechanics
 ├── index.html                 # Development single-page game HTML host

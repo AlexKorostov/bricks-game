@@ -23,7 +23,7 @@ bun run dev
 ```bash
 bun run build
 ```
-This bundles everything into a 100% self-contained offline HTML file at [`dist/bricks.html`](file:///Users/dev/projects/battle/dist/bricks.html) (and [`dist/index.html`](file:///Users/dev/projects/battle/dist/index.html)).
+This bundles everything into a 100% self-contained offline HTML file at [`dist/index.html`](file:///Users/dev/projects/battle/dist/index.html).
 
 ### 4. Run Unit Tests
 ```bash

@@ -225,7 +225,7 @@ All renderers implement a unified contract:
 2. **Standard Single-File Compiler (Vite + `vite-plugin-singlefile`)**:
    - Development server with instant HMR: `bun run dev` (or `npx vite`).
    - Production single-file bundling: `bun run build`.
-   - Produces 100% self-contained, standalone offline artifacts in `dist/bricks.html` and `dist/index.html` with all JS, CSS, and Three.js runtime fully inlined.
+   - Produces a single, 100% self-contained, standalone offline artifact in `dist/index.html` with all JS, CSS, and Three.js runtime fully inlined.
 
 3. **Continuous Integration & Automated Deployment (GitHub Actions)**:
    - **Automated Testing Workflow (`.github/workflows/test.yml`)**:
@@ -233,7 +233,7 @@ All renderers implement a unified contract:
      - Sets up pinned Bun runtime (`1.3.14`), installs deterministic dependencies (`bun install --frozen-lockfile`), and runs the entire unit test suite (`bun test`).
    - **Automated GitHub Pages Deployment Workflow (`.github/workflows/deploy.yml`)**:
      - Triggers on `push` to `main` and manual `workflow_dispatch`.
-     - Sets up pinned Bun runtime (`1.3.14`), installs deterministic dependencies (`bun install --frozen-lockfile`), executes `bun run build` to compile the standalone single-file bundle, and deploys `dist/` to the `gh-pages` branch.
+     - Sets up pinned Bun runtime (`1.3.14`), installs deterministic dependencies (`bun install --frozen-lockfile`), executes `bun run build` to compile the standalone single-file bundle, and deploys `dist/index.html` to the `gh-pages` branch.
 
 ---
 
@@ -243,7 +243,7 @@ All renderers implement a unified contract:
 - `.github/workflows/test.yml`: Continuous testing workflow running Vitest suite via Bun.
 - `.github/workflows/deploy.yml`: Continuous deployment workflow compiling single-file bundle and deploying to GitHub Pages.
 - `package.json`: Project manifest, scripts (`dev`, `build`, `test`), and dependencies (`three`, `vite`, `vite-plugin-singlefile`, `vitest`).
-- `vite.config.js`: Vite & Vitest configuration bundling the single-file HTML game to `dist/bricks.html`.
+- `vite.config.js`: Vite & Vitest configuration bundling the single-file HTML game to `dist/index.html`.
 - `src/core/Constants.js`: Definitions for grid size, wall depth, distinct 4-quadrant color palette, directions, and score multipliers.
 - `src/core/Brick.js`: Brick data model and direction state.
 - `src/core/Grid.js`: Board state management, `popAndShiftWall()`, and `pushInnermostWall()`.
