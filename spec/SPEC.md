@@ -122,7 +122,11 @@ All renderers implement a unified contract:
 
 ### 4.2 3D Three.js Renderer (`Renderer3D`)
 - **Camera & Projection**: Isometric / high-angled tilted perspective (42° FOV, 45° elevation, 45° diagonal orientation) with camera shake on combos.
-- **Brick Meshes**: Beveled rounded 3D cubes with high-contrast saturated materials and clearcoat reflections.
+- **Lighting & Vivid Color Calibration**:
+  - High-clarity multi-light studio rig (bright Hemispherical sky/ground fill, warm crisp Directional key sun light with soft shadows, and cool cyan Rim accent light) ensuring all faces of every brick receive balanced illumination without muddy shadows.
+  - Standard sRGB canvas texture color space and Linear tone mapping (`THREE.LinearToneMapping`) to guarantee 100% color parity with the vivid, saturated palette of 2D mode (`#e60026`, `#2962ff`, `#00c853`, `#ffd600`).
+  - Clear board atmosphere without obscuring dark fog, preserving maximum contrast and visual pop across the entire playfield.
+- **Brick Meshes**: High-contrast saturated materials with subtle physical specular luster and subtle self-emissive radiance.
 - **Direction Glyphs**: Top face vector textures with high-contrast directional chevrons and outline contrast.
 - **Aim Trajectory Preview**: Laser targeting line and translucent ghost box indicating exact landing cell (or spanning across to opposite wall on empty lanes).
 - **Particles & FX**: 3D explosion particle bursts on matches and wave clear celebrations.

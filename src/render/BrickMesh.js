@@ -91,6 +91,7 @@ function createDirectionTexture(directionName) {
   }
 
   const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
   texture.needsUpdate = true;
   textureCache.set(directionName, texture);
   return texture;
@@ -117,19 +118,23 @@ export class BrickMesh {
     const config = COLOR_CONFIG[this.brick.color] || COLOR_CONFIG.crimson;
     const geometry = new THREE.BoxGeometry(this.brickSize, this.height, this.brickSize);
 
-    // High-contrast physical material with rich clearcoat
+    // High-contrast vibrant physical material matching 2D color brilliance
     const baseMat = new THREE.MeshStandardMaterial({
       color: config.threeColor,
-      roughness: 0.2,
-      metalness: 0.1,
+      emissive: config.threeColor,
+      emissiveIntensity: 0.12,
+      roughness: 0.18,
+      metalness: 0.05,
     });
 
     const topTexture = createDirectionTexture(this.brick.direction.name);
     const topMat = new THREE.MeshStandardMaterial({
       color: config.threeColor,
       map: topTexture,
+      emissive: config.threeColor,
+      emissiveIntensity: 0.12,
       roughness: 0.15,
-      metalness: 0.08,
+      metalness: 0.05,
     });
 
     this.materials = [
@@ -156,6 +161,8 @@ export class BrickMesh {
 
     this.materials[2].map = topTexture;
     this.materials[2].color.setHex(config.threeColor);
+    this.materials[2].emissive.setHex(config.threeColor);
+    this.materials[2].emissiveIntensity = 0.12;
     this.materials[2].needsUpdate = true;
   }
 
@@ -165,13 +172,13 @@ export class BrickMesh {
       this.mesh.position.y = this.height / 2 + 0.18;
       this.materials.forEach((mat) => {
         mat.emissive.setHex(config.threeColor);
-        mat.emissiveIntensity = 0.55;
+        mat.emissiveIntensity = 0.65;
       });
     } else {
       this.mesh.position.y = this.height / 2;
       this.materials.forEach((mat) => {
-        mat.emissive.setHex(0x000000);
-        mat.emissiveIntensity = 0;
+        mat.emissive.setHex(config.threeColor);
+        mat.emissiveIntensity = 0.12;
       });
     }
   }
