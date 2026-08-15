@@ -1,5 +1,8 @@
 # Bricks - 3D Puzzle Game
 
+[![Test Suite](https://github.com/AlexKorostov/bricks-game/actions/workflows/test.yml/badge.svg)](https://github.com/AlexKorostov/bricks-game/actions/workflows/test.yml)
+[![Deploy to GitHub Pages](https://github.com/AlexKorostov/bricks-game/actions/workflows/deploy.yml/badge.svg)](https://github.com/AlexKorostov/bricks-game/actions/workflows/deploy.yml)
+
 A pseudo-3D tactical puzzle arcade game built with modern JavaScript and Three.js.
 
 🎮 **[Play Live Demo](https://alexkorostov.github.io/bricks-game/)**
