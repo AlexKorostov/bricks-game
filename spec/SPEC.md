@@ -193,7 +193,7 @@ All renderers implement a unified contract:
   - Match pop animations with 2D celebratory particle bursts.
 
 ### 4.4 Seamless Mode Switching & Clean-Slate Scene Reconstruction
-- A dedicated mode switch button in the HUD header allows instant toggling between **"3D View"** and **"2D Mode (Battery Saver)"**.
+- A compact, icon-free mode switch button in the HUD header (`#mode-toggle-btn`) displays purely **"2D"** (when in 3D mode) or **"3D"** (when in 2D mode) without icons or badge clutter to keep the button small and streamlined.
 - **Clean-Slate Scene Teardown & Rebuild**:
   - Whenever toggling between 3D and 2D modes (or during wave resets, restarts, and game state restorations), the outgoing renderer performs an exhaustive teardown (canceling any active animations/tweens, clearing hover highlights, hiding aim laser lines & ghost preview meshes, and purging all lingering brick meshes).
   - The newly active renderer completely flushes its scene hierarchy and reconstructs the visual board **100% from scratch** directly from the live `GameEngine.grid` model.
@@ -206,13 +206,15 @@ All renderers implement a unified contract:
 ### 4.5 Audio & Synthesized FX
 - Synthesized launch whooshes, impact clacks, harmonic match chords, pitch-ascending combo chimes, and wave clear fanfares run identically across both 2D and 3D render modes.
 
-### 4.6 HUD, Quick Restart, Reset & Fullscreen Controls
-- **Restart Current Wave Button (`↻`)**:
-  - Positioned in the left HUD header group next to the brand title and Wave indicator pill.
-  - Clicking restarts the **current wave**, rolling back score to `waveStartScore` and regenerating a fresh field and wall queues for that wave.
-- **Reset to 1st Wave Button (`⏮`)**:
-  - Positioned adjacent to the Restart button in the left HUD group (`title="Reset to Wave 1 (New Game)"`).
-  - Clicking completely resets the game to **Wave 1** with 0 score, generating a new Wave 1 field and wall queues.
+### 4.6 HUD, Wave Dropdown Menu & Fullscreen Controls
+- **Interactive Wave Brand Badge & Dropdown Menu**:
+  - The left HUD group features an interactive **Wave Brand Badge** (`[BRICKS Wave N ▾]`).
+  - Clicking/tapping the badge toggles a clean glassmorphic dropdown popup menu directly underneath, saving top-bar horizontal space on mobile.
+  - **Menu Actions**:
+    - **↻ Restart Current Wave**: Rolls back score to `waveStartScore` and regenerates a fresh field and wall queues for that wave.
+    - **⏮ Reset to Wave 1 (New Game)**: Completely resets the game to Wave 1 with 0 score, generating a new Wave 1 field and wall queues.
+  - Rendered with top-layer positioning (`z-index: 100`) and viewport coordinates, guaranteeing it stays strictly on top of the 2D/3D board grid and field tiles without clipping.
+  - Supports click-outside dismissal, ESC key dismissal, and item selection auto-close.
 - **Fullscreen Toggle Button (`⛶` / `⤡`)**:
   - Positioned in the right HUD control group alongside mode, sound, and help buttons.
   - Allows entering and exiting browser fullscreen mode with a single click.
@@ -224,8 +226,8 @@ All renderers implement a unified contract:
   - Explains the 4 core gameplay rules (Launch Bricks, Form Lines, Momentum Cascades, Clear the Field).
   - Includes a direct link to the public GitHub repository (`https://github.com/AlexKorostov/bricks-game`) with GitHub branding for open-source visibility.
 - **HUD Layout & Mobile Horizontal Swiping**:
-  - **Left HUD Group**: `[BRICKS Wave N]` brand badge + `[↻]` Restart Current Wave button + `[⏮]` Reset to Wave 1 button.
-  - **Right HUD Group**: Score card, High Score card, Mode Toggle button (3D / 2D Eco), Fullscreen Toggle button (`⛶`/`⤡`), Sound Toggle button (`🔊`/`🔇`), and Help button (`?`).
+  - **Left HUD Group**: `[BRICKS Wave N ▾]` interactive brand badge with dropdown menu for Restart and Reset options.
+  - **Right HUD Group**: Score card, High Score card, compact text-only Mode Toggle button (`2D` / `3D`), Fullscreen Toggle button (`⛶`/`⤡`), Sound Toggle button (`🔊`/`🔇`), and Help button (`?`).
   - **Mobile Vertical / Narrow Viewport Horizontal Swiping & Affordance**:
     - When running in vertical/portrait orientation on mobile or narrow viewports where buttons exceed the screen width, the top HUD bar supports frictionless horizontal touch swiping (`overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x`).
     - Scrollbars remain hidden for clean aesthetics.

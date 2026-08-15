@@ -163,6 +163,128 @@ html, body {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
+.wave-menu-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.brand-badge-interactive {
+  cursor: pointer;
+  border: 1px solid var(--panel-border);
+  transition: all 0.15s ease;
+  font-family: inherit;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.brand-badge-interactive:hover,
+.brand-badge-interactive:focus-visible {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 0 12px rgba(56, 189, 248, 0.2);
+  transform: translateY(-1px);
+}
+
+.brand-badge-interactive:active {
+  transform: translateY(0);
+}
+
+.dropdown-chevron {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  transition: transform 0.2s ease, color 0.15s ease;
+  margin-left: 0.15rem;
+}
+
+.brand-badge-interactive[aria-expanded="true"] .dropdown-chevron {
+  transform: rotate(180deg);
+  color: var(--accent-cyan);
+}
+
+.brand-badge-interactive[aria-expanded="true"] {
+  border-color: var(--accent-cyan);
+}
+
+/* Wave Dropdown Menu */
+.wave-dropdown-menu {
+  position: fixed;
+  min-width: 220px;
+  background: rgba(15, 23, 42, 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  padding: 0.45rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  animation: dropdownFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top left;
+  pointer-events: auto;
+}
+
+.wave-dropdown-menu.hidden {
+  display: none;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  color: var(--text-main);
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus-visible {
+  background: rgba(56, 189, 248, 0.15);
+  color: #ffffff;
+  transform: translateX(2px);
+}
+
+.dropdown-item-danger:hover,
+.dropdown-item-danger:focus-visible {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+}
+
+.dropdown-icon {
+  font-size: 1.05rem;
+  width: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropdown-label {
+  flex: 1;
+  letter-spacing: 0.02em;
+}
+
 .brand-title {
   font-family: var(--font-display);
   font-weight: 800;
@@ -221,17 +343,19 @@ html, body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--panel-border);
   color: var(--text-main);
-  padding: 0.45rem 0.85rem;
+  padding: 0.45rem 0.65rem;
   border-radius: 12px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  justify-content: center;
   cursor: pointer;
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.85rem;
+  font-weight: 800;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
   transition: all 0.15s ease;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  min-width: 44px;
 }
 
 .mode-toggle-btn:hover {
@@ -242,25 +366,6 @@ html, body {
 
 .mode-toggle-btn:active {
   transform: translateY(0);
-}
-
-.mode-icon {
-  font-size: 1rem;
-}
-
-.mode-label {
-  letter-spacing: 0.03em;
-}
-
-.mode-badge {
-  font-size: 0.65rem;
-  font-weight: 700;
-  background: rgba(0, 200, 83, 0.2);
-  color: #00c853;
-  border: 1px solid rgba(0, 200, 83, 0.4);
-  padding: 0.1rem 0.35rem;
-  border-radius: 6px;
-  text-transform: uppercase;
 }
 
 .icon-btn {
@@ -876,8 +981,9 @@ html, body {
   }
 
   .mode-toggle-btn {
-    padding: 0.35rem 0.65rem;
-    font-size: 0.78rem;
+    padding: 0.35rem 0.55rem;
+    font-size: 0.85rem;
+    min-width: 38px;
   }
 
   .icon-btn {
@@ -904,12 +1010,10 @@ html, body {
     padding: 0.3rem 0.5rem;
   }
 
-  .mode-label {
-    display: none;
-  }
-
   .mode-toggle-btn {
-    padding: 0.35rem 0.55rem;
+    padding: 0.3rem 0.45rem;
+    font-size: 0.82rem;
+    min-width: 34px;
   }
 }
 

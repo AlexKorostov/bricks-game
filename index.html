@@ -19,12 +19,24 @@
     <div id="hud-header-container">
       <header id="hud-header">
         <div class="hud-group">
-          <div class="brand-badge">
-            <span class="brand-title">BRICKS</span>
-            <span id="wave-value" class="wave-pill">Wave 1</span>
+          <div class="wave-menu-wrapper">
+            <button id="wave-menu-btn" class="brand-badge brand-badge-interactive" title="Game Menu: Restart Wave / Reset Game" aria-expanded="false" aria-haspopup="true">
+              <span class="brand-title">BRICKS</span>
+              <span id="wave-value" class="wave-pill">Wave 1</span>
+              <span class="dropdown-chevron">▾</span>
+            </button>
+
+            <div id="wave-dropdown-menu" class="wave-dropdown-menu hidden" role="menu">
+              <button id="dropdown-restart-btn" class="dropdown-item" role="menuitem">
+                <span class="dropdown-icon">↻</span>
+                <span class="dropdown-label">Restart Wave</span>
+              </button>
+              <button id="dropdown-reset-w1-btn" class="dropdown-item dropdown-item-danger" role="menuitem">
+                <span class="dropdown-icon">⏮</span>
+                <span class="dropdown-label">Reset to Wave 1</span>
+              </button>
+            </div>
           </div>
-          <button id="restart-btn" class="icon-btn" title="Restart Current Wave" aria-label="Restart Current Wave">↻</button>
-          <button id="reset-w1-btn" class="icon-btn" title="Reset to Wave 1 (New Game)" aria-label="Reset to Wave 1">⏮</button>
         </div>
 
         <div class="hud-group">
@@ -38,10 +50,7 @@
             <span id="high-score-value" class="stat-value gold">0</span>
           </div>
 
-          <button id="mode-toggle-btn" class="mode-toggle-btn" title="Switch to 2D Mode (Battery Saver)" aria-label="Toggle 2D/3D Mode">
-            <span id="mode-icon" class="mode-icon">⚡</span>
-            <span id="mode-text" class="mode-label">2D Mode</span>
-          </button>
+          <button id="mode-toggle-btn" class="mode-toggle-btn" title="Switch to 2D Mode (Battery Saver)" aria-label="Toggle 2D/3D Mode">2D</button>
 
           <button id="fullscreen-btn" class="icon-btn" title="Enter Fullscreen" aria-label="Toggle Fullscreen">⛶</button>
           <button id="sound-toggle-btn" class="icon-btn" title="Toggle Sound" aria-label="Toggle Sound">🔊</button>

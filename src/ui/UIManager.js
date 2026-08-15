@@ -21,13 +21,15 @@ export class UIManager {
     this.modalBtnSecondary = document.getElementById('modal-btn-secondary');
 
     this.modeToggleBtn = document.getElementById('mode-toggle-btn');
-    this.modeIcon = document.getElementById('mode-icon');
-    this.modeText = document.getElementById('mode-text');
 
     this.soundBtn = document.getElementById('sound-toggle-btn');
     this.fullscreenBtn = document.getElementById('fullscreen-btn');
     this.restartBtn = document.getElementById('restart-btn');
     this.resetW1Btn = document.getElementById('reset-w1-btn');
+    this.waveMenuBtn = document.getElementById('wave-menu-btn');
+    this.waveDropdownMenu = document.getElementById('wave-dropdown-menu');
+    this.dropdownRestartBtn = document.getElementById('dropdown-restart-btn');
+    this.dropdownResetW1Btn = document.getElementById('dropdown-reset-w1-btn');
     this.helpBtn = document.getElementById('help-btn');
     this.helpModal = document.getElementById('help-modal');
     this.closeHelpBtn = document.getElementById('close-help-btn');
@@ -43,6 +45,7 @@ export class UIManager {
 
   initEvents() {
     this.initHudSwipeScroll();
+    this.initWaveMenu();
     this.restartBtn?.addEventListener('click', () => {
       this.hideModal();
       if (this.onRestartGame) {
@@ -192,15 +195,90 @@ export class UIManager {
     setTimeout(updateSwipeCue, 150);
   }
 
+  initWaveMenu() {
+    if (!this.waveMenuBtn || !this.waveDropdownMenu) return;
+
+    const toggleMenu = (e) => {
+      e?.stopPropagation();
+      const isHidden = this.waveDropdownMenu.classList.contains('hidden');
+      if (isHidden) {
+        this.openWaveMenu();
+      } else {
+        this.closeWaveMenu();
+      }
+    };
+
+    this.waveMenuBtn.addEventListener('click', toggleMenu);
+
+    this.dropdownRestartBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.closeWaveMenu();
+      this.hideModal();
+      if (this.onRestartGame) {
+        this.onRestartGame();
+      }
+    });
+
+    this.dropdownResetW1Btn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.closeWaveMenu();
+      this.hideModal();
+      if (this.onResetToWave1) {
+        this.onResetToWave1();
+      }
+    });
+
+    const updateMenuPosition = () => {
+      if (!this.waveDropdownMenu.classList.contains('hidden') && this.waveMenuBtn) {
+        const rect = this.waveMenuBtn.getBoundingClientRect();
+        this.waveDropdownMenu.style.top = `${rect.bottom + 8}px`;
+        this.waveDropdownMenu.style.left = `${rect.left}px`;
+      }
+    };
+
+    this.hudHeader?.addEventListener('scroll', updateMenuPosition, { passive: true });
+    window.addEventListener('resize', updateMenuPosition);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(updateMenuPosition, 250);
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!this.waveDropdownMenu.classList.contains('hidden') && !e.target.closest('.wave-menu-wrapper') && !e.target.closest('.wave-dropdown-menu')) {
+        this.closeWaveMenu();
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !this.waveDropdownMenu.classList.contains('hidden')) {
+        this.closeWaveMenu();
+      }
+    });
+  }
+
+  openWaveMenu() {
+    if (!this.waveDropdownMenu || !this.waveMenuBtn) return;
+    const rect = this.waveMenuBtn.getBoundingClientRect();
+    this.waveDropdownMenu.style.top = `${rect.bottom + 8}px`;
+    this.waveDropdownMenu.style.left = `${rect.left}px`;
+    this.waveDropdownMenu.classList.remove('hidden');
+    this.waveMenuBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  closeWaveMenu() {
+    if (!this.waveDropdownMenu || !this.waveMenuBtn) return;
+    this.waveDropdownMenu.classList.add('hidden');
+    this.waveMenuBtn.setAttribute('aria-expanded', 'false');
+  }
+
   updateRenderModeUI(mode) {
     if (!this.modeToggleBtn) return;
     if (mode === '2d') {
-      if (this.modeIcon) this.modeIcon.textContent = '🧊';
-      if (this.modeText) this.modeText.innerHTML = '3D View';
+      this.modeToggleBtn.textContent = '3D';
       this.modeToggleBtn.setAttribute('title', 'Switch to 3D View');
     } else {
-      if (this.modeIcon) this.modeIcon.textContent = '⚡';
-      if (this.modeText) this.modeText.innerHTML = '2D Mode <span class="mode-badge">Eco</span>';
+      this.modeToggleBtn.textContent = '2D';
       this.modeToggleBtn.setAttribute('title', 'Switch to 2D Mode (Battery Saver)');
     }
   }
@@ -210,6 +288,10 @@ export class UIManager {
     this.animateScore();
     if (this.highScoreEl) this.highScoreEl.textContent = highScore.toLocaleString();
     if (this.waveEl) this.waveEl.textContent = `Wave ${wave}`;
+    if (this.dropdownRestartBtn) {
+      const label = this.dropdownRestartBtn.querySelector('.dropdown-label');
+      if (label) label.textContent = `Restart Wave ${wave}`;
+    }
   }
 
   animateScore() {
