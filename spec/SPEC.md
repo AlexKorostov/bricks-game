@@ -154,11 +154,16 @@ All renderers implement a unified contract:
   - **Wall Push Queue Synchronization**: When a brick enters a wall (off-board slide or cross-board flight), the target wall queue is atomically updated (layer 2 ejected, layers 1 and 0 shift outward, arriving brick docks in layer 0 with `direction = NONE`) ensuring no blank slots or rendering holes.
   - Match pop animations with 2D celebratory particle bursts.
 
-### 4.4 Seamless Mode Switching
+### 4.4 Seamless Mode Switching & Clean-Slate Scene Reconstruction
 - A dedicated mode switch button in the HUD header allows instant toggling between **"3D View"** and **"2D Mode (Battery Saver)"**.
-- Switching mode pauses the current renderer, activates the target renderer, and calls `syncFromGrid(grid)` with the live game engine state.
-- The player's active game, score, high score, current wave, board layout, and wall queues remain 100% intact.
-- The user's preferred render mode is persisted in `localStorage` (`bricks_render_mode`).
+- **Clean-Slate Scene Teardown & Rebuild**:
+  - Whenever toggling between 3D and 2D modes (or during wave resets, restarts, and game state restorations), the outgoing renderer performs an exhaustive teardown (canceling any active animations/tweens, clearing hover highlights, hiding aim laser lines & ghost preview meshes, and purging all lingering brick meshes).
+  - The newly active renderer completely flushes its scene hierarchy and reconstructs the visual board **100% from scratch** directly from the live `GameEngine.grid` model.
+  - Guarantees zero "ghost" bricks, orphan Three.js meshes, detached textures, or lingering aiming indicators when switching back and forth between 2D and 3D views.
+- **State Invariance**:
+  - The player's active game, score, high score, current wave, board layout, and wall queues remain 100% intact.
+- **Persistence**:
+  - The user's preferred render mode is persisted in `localStorage` (`bricks_render_mode`).
 
 ### 4.5 Audio & Synthesized FX
 - Synthesized launch whooshes, impact clacks, harmonic match chords, pitch-ascending combo chimes, and wave clear fanfares run identically across both 2D and 3D render modes.

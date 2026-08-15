@@ -423,6 +423,9 @@ export class Renderer2D {
   unmount() {
     this.isMounted = false;
     this.clearHover();
+    this.hideAimPreview();
+    if (this.flyContainer) this.flyContainer.innerHTML = '';
+    if (this.particlesContainer) this.particlesContainer.innerHTML = '';
     this.wrapper.style.display = 'none';
   }
 

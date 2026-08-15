@@ -31,6 +31,9 @@ export class Renderer3D {
     this.boardView = new BoardView(1.0);
     this.sceneManager.scene.add(this.boardView.group);
 
+    this.bricksRootGroup = new THREE.Group();
+    this.sceneManager.scene.add(this.bricksRootGroup);
+
     this.animator = new Animator();
     this.particleSystem = new ParticleSystem(this.sceneManager.scene);
     this.brickMeshesMap = new Map();
@@ -59,14 +62,48 @@ export class Renderer3D {
   }
 
   clearAllBrickMeshes() {
+    // 1. Cancel running tweens
     this.animator.activeTweens = [];
+
+    // 2. Reset input hover & aim line & ghost preview mesh
+    if (this.input) this.input.clearHover();
+    if (this.boardView) this.boardView.hideAimPreview();
+    if (this.particleSystem) this.particleSystem.clear();
+
+    // 3. Clean up brickMeshesMap
     this.brickMeshesMap.forEach((meshGroup) => {
-      this.sceneManager.scene.remove(meshGroup);
-      const bMesh = meshGroup.userData.brickMesh;
+      if (meshGroup.parent) meshGroup.parent.remove(meshGroup);
+      const bMesh = meshGroup.userData?.brickMesh;
       if (bMesh) bMesh.dispose();
     });
     this.brickMeshesMap.clear();
-    this.particleSystem.clear();
+
+    // 4. Clean up bricksRootGroup children
+    if (this.bricksRootGroup) {
+      while (this.bricksRootGroup.children.length > 0) {
+        const child = this.bricksRootGroup.children[0];
+        this.bricksRootGroup.remove(child);
+        child.userData?.brickMesh?.dispose();
+      }
+    }
+
+    // 5. Deep-clean any stray brick meshes that might have been attached directly to scene
+    const strays = [];
+    this.sceneManager.scene.traverse((obj) => {
+      if (
+        obj !== this.sceneManager.scene &&
+        obj !== this.boardView.group &&
+        obj !== this.bricksRootGroup &&
+        obj.userData &&
+        (obj.userData.brickId || obj.userData.brickMesh)
+      ) {
+        strays.push(obj);
+      }
+    });
+    for (const stray of strays) {
+      if (stray.parent) stray.parent.remove(stray);
+      stray.userData?.brickMesh?.dispose();
+    }
   }
 
   syncFromGrid(grid) {
@@ -80,7 +117,7 @@ export class Renderer3D {
           const bMesh = this.createBrickMesh(brick);
           const worldPos = this.boardView.gridToWorld(x, y);
           bMesh.group.position.copy(worldPos);
-          this.sceneManager.scene.add(bMesh.group);
+          this.bricksRootGroup.add(bMesh.group);
           this.brickMeshesMap.set(brick.id, bMesh.group);
         }
       }
@@ -96,7 +133,7 @@ export class Renderer3D {
             const bMesh = this.createBrickMesh(brick);
             const worldPos = this.boardView.wallToWorld(side, lane, layer);
             bMesh.group.position.copy(worldPos);
-            this.sceneManager.scene.add(bMesh.group);
+            this.bricksRootGroup.add(bMesh.group);
             this.brickMeshesMap.set(brick.id, bMesh.group);
           }
         }
@@ -110,15 +147,20 @@ export class Renderer3D {
     }
     this.wrapper.style.display = 'block';
     this.isMounted = true;
+    this.input.clearHover();
+    this.boardView.hideAimPreview();
     this.sceneManager.onResize();
     this.sceneManager.startRenderLoop();
   }
 
   unmount() {
     this.isMounted = false;
+    this.input.clearHover();
+    this.input.setEnabled(false);
+    this.boardView.hideAimPreview();
+    this.clearAllBrickMeshes();
     this.wrapper.style.display = 'none';
     this.sceneManager.stopRenderLoop();
-    this.input.setEnabled(false);
   }
 
   setEnabled(enabled) {
@@ -134,7 +176,7 @@ export class Renderer3D {
       steps,
       boardView: this.boardView,
       brickMeshesMap: this.brickMeshesMap,
-      scene: this.sceneManager.scene,
+      scene: this.bricksRootGroup,
       createBrickMeshFn: (brick) => this.createBrickMesh(brick),
       soundSystem,
       particleSystem: this.particleSystem,
