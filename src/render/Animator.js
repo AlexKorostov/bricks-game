@@ -395,13 +395,40 @@ export class Animator {
 
         case 'WAVE_CLEAR': {
           soundSystem.playWaveClear();
-          for (let i = 0; i < 4; i++) {
-            const angle = (i * Math.PI) / 2;
-            const pos = new THREE.Vector3(Math.cos(angle) * 3, 0.5, Math.sin(angle) * 3);
-            particleSystem.spawnBurst(pos, 'amber', 36);
-            particleSystem.spawnBurst(pos, 'emerald', 36);
-          }
-          await new Promise((r) => setTimeout(r, 300));
+
+          // 1. Launch initial dense full-board canopy of fluttering multicolored confetti
+          particleSystem.spawnConfettiShower(240, 2.4);
+
+          // Helper to trigger timed firework bursts matching the audio bursts
+          const triggerTimedFirework = (delayMs, pos, color) => {
+            setTimeout(() => {
+              if (particleSystem.spawnFirework) {
+                particleSystem.spawnFirework(pos, color, 85);
+              }
+            }, delayMs);
+          };
+
+          // 2. Staggered 3D Fireworks synchronized with audio rockets & explosions
+          triggerTimedFirework(250, new THREE.Vector3(0, 3.2, 0), 'amber');
+          triggerTimedFirework(550, new THREE.Vector3(-3.2, 2.8, -2.5), 'crimson');
+
+          // Secondary confetti burst at 0.65s for rich continuous falling effect
+          setTimeout(() => {
+            if (particleSystem.spawnConfettiShower) {
+              particleSystem.spawnConfettiShower(180, 2.0);
+            }
+          }, 650);
+
+          triggerTimedFirework(900, new THREE.Vector3(3.0, 3.0, 2.5), 'cobalt');
+          triggerTimedFirework(1250, new THREE.Vector3(3.2, 3.2, -2.5), 'emerald');
+          triggerTimedFirework(1550, new THREE.Vector3(-2.8, 3.0, 3.2), 'amber');
+
+          // Grand Finale twin bursts
+          triggerTimedFirework(1750, new THREE.Vector3(-1.8, 3.8, 0.5), 'crimson');
+          triggerTimedFirework(1780, new THREE.Vector3(1.8, 3.8, 1.5), 'emerald');
+
+          // Full 2.0s dramatic celebration before modal popup
+          await new Promise((r) => setTimeout(r, 2000));
           break;
         }
 

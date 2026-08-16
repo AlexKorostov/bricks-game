@@ -480,6 +480,93 @@ export class Renderer2D {
     }
   }
 
+  spawnFirework2D(centerX, centerY, colorName, count = 45) {
+    const config = COLOR_CONFIG[colorName] || COLOR_CONFIG.amber;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle-2d';
+      const isGlitter = Math.random() < 0.25;
+      const col = isGlitter ? '#ffffff' : config.hex;
+      p.style.backgroundColor = col;
+      p.style.boxShadow = `0 0 10px ${config.hex}, 0 0 4px #ffffff`;
+      p.style.left = `${centerX}px`;
+      p.style.top = `${centerY}px`;
+      p.style.width = isGlitter ? '6px' : '9px';
+      p.style.height = isGlitter ? '6px' : '9px';
+
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 40 + Math.random() * 95;
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed * 0.9 - 15;
+
+      this.particlesContainer.appendChild(p);
+
+      p.animate(
+        [
+          { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+          { transform: `translate(${vx}px, ${vy}px) scale(0.2)`, opacity: 0 },
+        ],
+        {
+          duration: 600 + Math.random() * 250,
+          easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+          fill: 'forwards',
+        }
+      ).onfinish = () => p.remove();
+    }
+  }
+
+  spawnConfettiShower2D(count = 130, streamDurationMs = 1000) {
+    const boardRect = this.boardContainer.getBoundingClientRect();
+    const colors = [
+      '#e60026', '#2962ff', '#00c853', '#ffd600',
+      '#ffffff', '#ff9100', '#00e5ff', '#e040fb', '#ffea00'
+    ];
+
+    for (let i = 0; i < count; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti-2d';
+      const col = colors[Math.floor(Math.random() * colors.length)];
+      c.style.backgroundColor = col;
+      c.style.width = `${6 + Math.random() * 7}px`;
+      c.style.height = `${9 + Math.random() * 9}px`;
+      c.style.borderRadius = '2px';
+      c.style.position = 'absolute';
+      c.style.pointerEvents = 'none';
+      c.style.zIndex = '35';
+      c.style.opacity = '0'; // Hidden until individual emission delay starts
+      c.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.35)';
+
+      // Full wide coverage across the entire board width
+      const startX = Math.random() * boardRect.width;
+      const startY = -8 + Math.random() * 15;
+      c.style.left = `${startX}px`;
+      c.style.top = `${startY}px`;
+
+      this.particlesContainer.appendChild(c);
+
+      const delay = (i / count) * streamDurationMs + (Math.random() - 0.5) * 40;
+      const swayX = (Math.random() - 0.5) * 120;
+      const fallDist = boardRect.height + 30;
+      const rot = (Math.random() - 0.5) * 720;
+      const duration = 1300 + Math.random() * 500;
+
+      c.animate(
+        [
+          { transform: 'translate(0, 0) rotate(0deg) scale(0.6)', opacity: 0, offset: 0 },
+          { transform: `translate(${swayX * 0.1}px, 12px) rotate(${rot * 0.1}deg) scale(1)`, opacity: 1, offset: 0.08 },
+          { transform: `translate(${swayX * 0.55}px, ${fallDist * 0.55}px) rotate(${rot * 0.55}deg) scale(0.95)`, opacity: 0.95, offset: 0.6 },
+          { transform: `translate(${swayX}px, ${fallDist}px) rotate(${rot}deg) scale(0.85)`, opacity: 0.1, offset: 1.0 },
+        ],
+        {
+          delay: Math.max(0, delay),
+          duration,
+          easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          fill: 'forwards',
+        }
+      ).onfinish = () => c.remove();
+    }
+  }
+
   async animateSlideBrick(brick, fromSlot, toSlot, duration = 180) {
     const pStart = this.getSlotCenter(fromSlot);
     const pEnd = this.getSlotCenter(toSlot);
@@ -748,13 +835,30 @@ export class Renderer2D {
         case 'WAVE_CLEAR': {
           soundSystem.playWaveClear();
           const boardRect = this.boardContainer.getBoundingClientRect();
-          for (let i = 0; i < 5; i++) {
-            const cx = boardRect.width * (0.2 + i * 0.15);
-            const cy = boardRect.height * (0.3 + (i % 2) * 0.4);
-            this.spawnParticleBurst(cx, cy, 'amber', 20);
-            this.spawnParticleBurst(cx, cy, 'emerald', 20);
-          }
-          await new Promise((r) => setTimeout(r, 250));
+
+          // 1. Launch continuous 1-second wide confetti shower across the full board
+          this.spawnConfettiShower2D(140, 1000);
+
+          const triggerBurst = (delayMs, relX, relY, color) => {
+            setTimeout(() => {
+              const cx = boardRect.width * relX;
+              const cy = boardRect.height * relY;
+              this.spawnFirework2D(cx, cy, color, 45);
+            }, delayMs);
+          };
+
+          // 2. Staggered 2D Fireworks synchronized with audio
+          triggerBurst(250, 0.5, 0.35, 'amber');
+          triggerBurst(550, 0.25, 0.25, 'crimson');
+          triggerBurst(900, 0.75, 0.7, 'cobalt');
+          triggerBurst(1250, 0.8, 0.25, 'emerald');
+          triggerBurst(1550, 0.2, 0.75, 'amber');
+
+          triggerBurst(1750, 0.4, 0.3, 'crimson');
+          triggerBurst(1780, 0.6, 0.3, 'emerald');
+
+          // Full 2.0s celebration
+          await new Promise((r) => setTimeout(r, 2000));
           break;
         }
 

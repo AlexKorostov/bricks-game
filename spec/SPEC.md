@@ -162,7 +162,9 @@ All renderers implement a unified contract:
   - Features a **bold, wide luminous laser beam** (`width = 0.20` cell width) with an inner high-intensity laser core running down the center of the lane in the brick's matching color.
   - Spans cleanly from the active wall mouth to the obstacle impact point (or across to the opposite wall on empty lanes) without obscuring the board floor.
   - Target landing cell is illuminated with a **matching rounded 3D ghost landing pad** (`RoundedBoxGeometry`, corner radius `0.16`, translucent volume with glowing silhouette) for seamless visual consistency.
-- **Particles & FX**: 3D explosion particle bursts on matches and wave clear celebrations.
+- **Particles, Dramatic Fireworks & Confetti Celebration**:
+  - 3D explosion particle bursts on match eliminations.
+  - **Dramatic Wave Completion Celebration**: Upon clearing all bricks on the board, a 2.0-second celebratory spectacle triggers with staggered multi-stage fireworks (rocket ascent, vibrant radial bursts, glittering spark trails) and realistic 3D fluttering confetti ribbons ($1\text{ width} \times 4\text{ height}$ double-sided rectangular strips with aerodynamic tilt, angled drift, and full vertical end-over-end tumbling) blanketing the entire 10×10 field, all 4 surrounding walls, and bottom quadrants before the Wave Clear modal is displayed.
 - **Lifecycle & Power Optimization**: When switched away (deactivated), the 3D render loop (`requestAnimationFrame`) is completely paused, stopping GPU utilization.
 
 ### 4.3 2D High-Efficiency Battery-Saver Renderer (`Renderer2D`) - Crisp Candy Tile Aesthetics
@@ -191,6 +193,7 @@ All renderers implement a unified contract:
   - CSS/JS eased transitions for sliding projectiles, source wall inward feeds, target wall outward push/ejection, and cascading slides.
   - **Wall Push Queue Synchronization**: When a brick enters a wall (off-board slide or cross-board flight), the target wall queue is atomically updated (layer 2 ejected, layers 1 and 0 shift outward, arriving brick docks in layer 0 with `direction = NONE`) ensuring no blank slots or rendering holes.
   - Match pop animations with 2D celebratory particle bursts.
+  - **2D Wave Clear Celebration**: 2.0-second celebratory spectacle with synchronized multi-stage fireworks and a continuous 1-second wide shower of tumbling confetti ribbons drifting down across the board.
 
 ### 4.4 Seamless Mode Switching & Clean-Slate Scene Reconstruction
 - A compact, icon-free mode switch button in the HUD header (`#mode-toggle-btn`) displays purely **"2D"** (when in 3D mode) or **"3D"** (when in 2D mode) without icons or badge clutter to keep the button small and streamlined.
@@ -204,7 +207,7 @@ All renderers implement a unified contract:
   - The user's preferred render mode is persisted in `localStorage` (`bricks_render_mode`).
 
 ### 4.5 Audio & Synthesized FX
-- Synthesized launch whooshes, impact clacks, harmonic match chords, pitch-ascending combo chimes, and wave clear fanfares run identically across both 2D and 3D render modes.
+- Synthesized launch whooshes, impact clacks, harmonic match chords, pitch-ascending combo chimes, and dramatic multi-stage wave clear fireworks (whistling ascent, deep explosive booms, and sizzling crackles) run identically across both 2D and 3D render modes.
 
 ### 4.6 HUD, Wave Dropdown Menu & Fullscreen Controls
 - **Interactive Wave Brand Badge & Dropdown Menu**:

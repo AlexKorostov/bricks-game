@@ -941,6 +941,13 @@ html, body {
   transform-origin: center;
 }
 
+.confetti-2d {
+  position: absolute;
+  pointer-events: none;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
 /* --- Responsive Adjustments --- */
 @media (max-width: 768px) {
   #hud-header-container {
