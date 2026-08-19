@@ -127,6 +127,7 @@ All renderers implement a unified contract:
   - Near-orthographic, top-down isometric perspective (33° FOV, ~63° elevation angle) with camera shake on combos.
   - Camera position (`(0, 27.5, 15.0)`) and focal target (`(0, -0.2, 0.8)`) calibrated to fit the entire board and all 4 wall layers comfortably within the screen height with generous margins under the top HUD bar and on desktop/laptop displays.
   - Responsive framing automatically adapts on resize, ensuring both width and height remain completely in view across aspect ratios.
+  - **Quadcopter Takeoff Intro Animation (3D Only)**: When the game page is opened / loaded, when beginning a new game, resetting to wave 1, restarting a wave, or advancing to the next wave in 3D mode, the camera executes a smooth 1.0-second dynamic "takeoff / move-out" sequence. Starting from a close quadcopter viewpoint sitting right above the surface of the central grid (`(0, 1.2, 1.8)`), the camera lifts off and sweeps smoothly backward and upward to its calibrated resting isometric vantage point (`(0, 27.5, 15.0)`).
 - **Tone Mapping & Exposure**:
   - `THREE.ACESFilmicToneMapping` with balanced exposure (`toneMappingExposure: 0.98`) for calm, comfortable contrast without harsh blown-out highlights or eye fatigue.
 - **Calm, High-Clarity Multi-Light Studio Rig**:
@@ -164,7 +165,9 @@ All renderers implement a unified contract:
   - Target landing cell is illuminated with a **matching rounded 3D ghost landing pad** (`RoundedBoxGeometry`, corner radius `0.16`, translucent volume with glowing silhouette) for seamless visual consistency.
 - **Particles, Dramatic Fireworks & Confetti Celebration**:
   - 3D explosion particle bursts on match eliminations.
-  - **Dramatic Wave Completion Celebration**: Upon clearing all bricks on the board, a 2.0-second celebratory spectacle triggers with staggered multi-stage fireworks (rocket ascent, vibrant radial bursts, glittering spark trails) and realistic 3D fluttering confetti ribbons ($1\text{ width} \times 4\text{ height}$ double-sided rectangular strips with aerodynamic tilt, angled drift, and full vertical end-over-end tumbling) blanketing the entire 10×10 field, all 4 surrounding walls, and bottom quadrants before the Wave Clear modal is displayed.
+  - **Dramatic Wave Completion Celebration**: Upon clearing all bricks on the board, a 3.0-second celebratory spectacle triggers:
+    - **Spherical 3D Grid Explosion & Wall Brick Scatter**: An explosive central shockwave erupts from the center of the grid, propelling all remaining bricks in all 4 surrounding walls outward in a dramatic 3D spherical dispersion at calm, majestic speeds ($6.3\text{--}12.3\text{ units/s}$, 30% slower). Solid intact candy tile bricks soar in multi-directional trajectories—some rocketing laterally to the sides, some flying upward and forward directly towards the camera, and others arcing away—with ultra-gentle gravity ($g = -5.8$) and distinct speeds. Each flying brick is assigned a unique random 3D rotation axis and constant angular speed that remains strictly fixed and unchanging throughout the entire animation (driven by quaternion axis-angle rotation).
+    - **Confetti & Fireworks**: Multi-stage staggered fireworks (rocket ascent, vibrant radial bursts, glittering spark trails) and realistic 3D fluttering confetti ribbons ($1\text{ width} \times 4\text{ height}$ double-sided rectangular strips with aerodynamic tilt, angled drift, and full vertical end-over-end tumbling) blanketing the entire 10×10 field, all 4 surrounding walls, and bottom quadrants before the Wave Clear modal is displayed.
 - **Lifecycle & Power Optimization**: When switched away (deactivated), the 3D render loop (`requestAnimationFrame`) is completely paused, stopping GPU utilization.
 
 ### 4.3 2D High-Efficiency Battery-Saver Renderer (`Renderer2D`) - Crisp Candy Tile Aesthetics
@@ -193,7 +196,7 @@ All renderers implement a unified contract:
   - CSS/JS eased transitions for sliding projectiles, source wall inward feeds, target wall outward push/ejection, and cascading slides.
   - **Wall Push Queue Synchronization**: When a brick enters a wall (off-board slide or cross-board flight), the target wall queue is atomically updated (layer 2 ejected, layers 1 and 0 shift outward, arriving brick docks in layer 0 with `direction = NONE`) ensuring no blank slots or rendering holes.
   - Match pop animations with 2D celebratory particle bursts.
-  - **2D Wave Clear Celebration**: 2.0-second celebratory spectacle with synchronized multi-stage fireworks and a continuous 1-second wide shower of tumbling confetti ribbons drifting down across the board.
+  - **2D Wave Clear Celebration**: 2.0-second celebratory spectacle with synchronized multi-stage fireworks and a continuous 1-second wide shower of tumbling confetti ribbons drifting down across the board (without wall brick explosion, preserving lightweight 2D efficiency).
 
 ### 4.4 Seamless Mode Switching & Clean-Slate Scene Reconstruction
 - A compact, icon-free mode switch button in the HUD header (`#mode-toggle-btn`) displays purely **"2D"** (when in 3D mode) or **"3D"** (when in 2D mode) without icons or badge clutter to keep the button small and streamlined.

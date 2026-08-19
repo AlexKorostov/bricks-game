@@ -171,6 +171,37 @@ export class Renderer3D {
     this.sceneManager.triggerCameraShake(intensity);
   }
 
+  playIntroTakeoff(duration = 1.0) {
+    if (!this.isMounted) return Promise.resolve();
+
+    // Quadcopter drone launch: starts sitting right on the surface in the center of the grid
+    const startPos = new THREE.Vector3(0, 1.2, 1.8);
+    const startTarget = new THREE.Vector3(0, 0.1, -0.6);
+
+    const endPos = this.sceneManager.cameraDefaultPos.clone();
+    const endTarget = this.sceneManager.cameraTarget.clone();
+
+    this.sceneManager.setCameraTransform(startPos, startTarget);
+    this.setEnabled(false);
+
+    // Quadcopter takeoff curve: liftoff acceleration followed by smooth ease-out arrival
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+    return this.animator.tween(
+      duration,
+      (eased) => {
+        const curPos = new THREE.Vector3().lerpVectors(startPos, endPos, eased);
+        const curTarget = new THREE.Vector3().lerpVectors(startTarget, endTarget, eased);
+        this.sceneManager.setCameraTransform(curPos, curTarget);
+      },
+      () => {
+        this.sceneManager.resetCameraToDefault();
+        this.setEnabled(this.gameEngine.state === 'READY');
+      },
+      easeOutCubic
+    );
+  }
+
   async playTurnTimeline({ steps, soundSystem }) {
     return this.animator.playTurnTimeline({
       steps,
@@ -180,6 +211,7 @@ export class Renderer3D {
       createBrickMeshFn: (brick) => this.createBrickMesh(brick),
       soundSystem,
       particleSystem: this.particleSystem,
+      triggerCameraShakeFn: (intensity) => this.triggerCameraShake(intensity),
       onStepCallback: (step) => {
         if (this.onStepCallback) this.onStepCallback(step);
       },

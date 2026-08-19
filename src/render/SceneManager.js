@@ -29,8 +29,12 @@ export class SceneManager {
     // Near-orthographic top-down isometric perspective calibrated to fit screen height perfectly
     this.cameraTarget = new THREE.Vector3(0, -0.2, 0.8);
     this.cameraDefaultPos = new THREE.Vector3(0, 27.5, 15.0);
-    this.camera.position.copy(this.cameraDefaultPos);
-    this.camera.lookAt(this.cameraTarget);
+
+    this.cameraCurrentPos = this.cameraDefaultPos.clone();
+    this.cameraCurrentTarget = this.cameraTarget.clone();
+
+    this.camera.position.copy(this.cameraCurrentPos);
+    this.camera.lookAt(this.cameraCurrentTarget);
 
     this.shakeIntensity = 0;
   }
@@ -129,15 +133,15 @@ export class SceneManager {
         const shakeY = (Math.random() - 0.5) * this.shakeIntensity;
         const shakeZ = (Math.random() - 0.5) * this.shakeIntensity;
         this.camera.position.set(
-          this.cameraDefaultPos.x + shakeX,
-          this.cameraDefaultPos.y + shakeY,
-          this.cameraDefaultPos.z + shakeZ
+          this.cameraCurrentPos.x + shakeX,
+          this.cameraCurrentPos.y + shakeY,
+          this.cameraCurrentPos.z + shakeZ
         );
         this.shakeIntensity = Math.max(0, this.shakeIntensity - dt * 1.5);
       } else {
-        this.camera.position.copy(this.cameraDefaultPos);
+        this.camera.position.copy(this.cameraCurrentPos);
       }
-      this.camera.lookAt(this.cameraTarget);
+      this.camera.lookAt(this.cameraCurrentTarget);
 
       // Call registered systems
       for (const cb of this.updateCallbacks) {
@@ -148,6 +152,20 @@ export class SceneManager {
     };
 
     this.animationFrameId = requestAnimationFrame(animate);
+  }
+
+  setCameraTransform(pos, target = null) {
+    if (pos) this.cameraCurrentPos.copy(pos);
+    if (target) this.cameraCurrentTarget.copy(target);
+    this.camera.position.copy(this.cameraCurrentPos);
+    this.camera.lookAt(this.cameraCurrentTarget);
+  }
+
+  resetCameraToDefault() {
+    this.cameraCurrentPos.copy(this.cameraDefaultPos);
+    this.cameraCurrentTarget.copy(this.cameraTarget);
+    this.camera.position.copy(this.cameraCurrentPos);
+    this.camera.lookAt(this.cameraCurrentTarget);
   }
 
   stopRenderLoop() {

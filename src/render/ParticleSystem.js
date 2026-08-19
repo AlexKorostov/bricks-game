@@ -134,6 +134,38 @@ export class ParticleSystem {
   }
 
   /**
+   * Spawns an expanding 3D ground shockwave ring.
+   * @param {THREE.Vector3} position
+   * @param {number} [maxRadius=15.0]
+   * @param {number} [duration=0.65]
+   */
+  spawnShockwave(position, maxRadius = 15.0, duration = 0.65) {
+    const geom = new THREE.RingGeometry(0.15, 0.75, 64);
+    geom.rotateX(-Math.PI / 2);
+
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0x38bdf8,
+      transparent: true,
+      opacity: 0.95,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+
+    const mesh = new THREE.Mesh(geom, mat);
+    mesh.position.copy(position);
+    this.scene.add(mesh);
+
+    this.activeEmitters.push({
+      type: 'shockwave',
+      mesh,
+      maxRadius,
+      age: 0,
+      maxAge: duration,
+    });
+  }
+
+  /**
    * Spawns dense fluttering multicolored 3D confetti ribbons (1x4 aspect ratio with vertical tumbling and angled drift).
    * @param {number} [count=180]
    * @param {number} [duration=2.4]
@@ -269,6 +301,10 @@ export class ParticleSystem {
         const twinkle = 0.8 + Math.sin(emitter.age * 28) * 0.2;
         emitter.mesh.material.opacity = Math.max(0, (1.0 - progress) * twinkle);
         posAttr.needsUpdate = true;
+      } else if (emitter.type === 'shockwave') {
+        const s = 1.0 + progress * (emitter.maxRadius - 1.0);
+        emitter.mesh.scale.set(s, 1, s);
+        emitter.mesh.material.opacity = Math.max(0, (1.0 - Math.pow(progress, 1.5)) * 0.95);
       } else {
         // Standard burst
         const posAttr = emitter.mesh.geometry.attributes.position;

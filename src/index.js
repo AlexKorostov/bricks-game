@@ -47,8 +47,11 @@ class BricksApp {
     // 3. Mount active renderer and restore or initialize game
     this.setRenderMode(this.renderMode);
 
-    if (!this.loadGameState()) {
+    const hasSavedState = this.loadGameState();
+    if (!hasSavedState) {
       this.resetToFirstWave();
+    } else if (this.renderMode === '3d' && this.engine.state === 'READY' && this.renderer3D.playIntroTakeoff) {
+      this.renderer3D.playIntroTakeoff(1.0);
     }
   }
 
@@ -134,6 +137,9 @@ class BricksApp {
     this.activeRenderer.syncFromGrid(this.engine.grid);
     this.ui.updateHUD(this.engine.score, this.engine.highScore, this.engine.wave);
     this.activeRenderer.setEnabled(true);
+    if (this.renderMode === '3d' && this.renderer3D.playIntroTakeoff) {
+      this.renderer3D.playIntroTakeoff(1.0);
+    }
     this.saveGameState();
   }
 
@@ -142,6 +148,9 @@ class BricksApp {
     this.activeRenderer.syncFromGrid(this.engine.grid);
     this.ui.updateHUD(this.engine.score, this.engine.highScore, this.engine.wave);
     this.activeRenderer.setEnabled(true);
+    if (this.renderMode === '3d' && this.renderer3D.playIntroTakeoff) {
+      this.renderer3D.playIntroTakeoff(1.0);
+    }
     this.saveGameState();
   }
 
@@ -150,6 +159,9 @@ class BricksApp {
     this.activeRenderer.syncFromGrid(this.engine.grid);
     this.ui.updateHUD(this.engine.score, this.engine.highScore, this.engine.wave);
     this.activeRenderer.setEnabled(true);
+    if (this.renderMode === '3d' && this.renderer3D.playIntroTakeoff) {
+      this.renderer3D.playIntroTakeoff(1.0);
+    }
     this.saveGameState();
   }
 
@@ -159,6 +171,9 @@ class BricksApp {
     this.activeRenderer.syncFromGrid(this.engine.grid);
     this.ui.updateHUD(this.engine.score, this.engine.highScore, this.engine.wave);
     this.activeRenderer.setEnabled(true);
+    if (this.renderMode === '3d' && this.renderer3D.playIntroTakeoff) {
+      this.renderer3D.playIntroTakeoff(1.0);
+    }
     this.saveGameState();
   }
 
@@ -186,8 +201,11 @@ class BricksApp {
     } catch (err) {
       console.error('Animation error during turn', err);
     } finally {
-      // Authoritatively synchronize renderer with final grid state to guarantee zero ghost meshes or missing slots
-      this.activeRenderer.syncFromGrid(this.engine.grid);
+      // Authoritatively synchronize renderer with final grid state to guarantee zero ghost meshes or missing slots.
+      // In 3D mode on WAVE_CLEAR, wall bricks have exploded and flown off, next wave will sync freshly on start.
+      if (turnResult.state !== 'WAVE_CLEAR' || this.renderMode === '2d') {
+        this.activeRenderer.syncFromGrid(this.engine.grid);
+      }
     }
 
     this.ui.updateHUD(this.engine.score, this.engine.highScore, this.engine.wave);

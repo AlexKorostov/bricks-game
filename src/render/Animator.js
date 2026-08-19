@@ -206,6 +206,7 @@ export class Animator {
     createBrickMeshFn,
     soundSystem,
     particleSystem,
+    triggerCameraShakeFn,
     onStepCallback,
   }) {
     for (const step of steps) {
@@ -396,8 +397,122 @@ export class Animator {
         case 'WAVE_CLEAR': {
           soundSystem.playWaveClear();
 
-          // 1. Launch initial dense full-board canopy of fluttering multicolored confetti
-          particleSystem.spawnConfettiShower(240, 2.4);
+          // 1. Trigger camera shake & central grid explosion shockwaves
+          if (triggerCameraShakeFn) {
+            triggerCameraShakeFn(0.55);
+          }
+
+          if (particleSystem.spawnShockwave) {
+            particleSystem.spawnShockwave(new THREE.Vector3(0, 0.12, 0), 16.0, 0.7);
+            particleSystem.spawnShockwave(new THREE.Vector3(0, 0.14, 0), 10.0, 0.5);
+          }
+          if (particleSystem.spawnFirework) {
+            particleSystem.spawnFirework(new THREE.Vector3(0, 0.5, 0), 'amber', 90);
+            particleSystem.spawnFirework(new THREE.Vector3(0, 0.7, 0), 'crimson', 70);
+          }
+
+          // 2. True 3D Spherical Brick Explosion: multi-directional trajectories, forward camera flight, fixed-axis tumbling (30% slower)
+          const explosionDuration = 3.0;
+          const flyingBricks = [];
+          const deltaQuat = new THREE.Quaternion();
+
+          brickMeshesMap.forEach((meshGroup) => {
+            const startPos = meshGroup.position.clone();
+            const startQuat = meshGroup.quaternion.clone();
+
+            const dx = startPos.x;
+            const dz = startPos.z;
+            const distFromCenter = Math.sqrt(dx * dx + dz * dz) || 1.0;
+
+            // Micro-stagger delay based on distance from center for a propagating blast wave
+            const delay = Math.min(0.18, (distFromCenter / 10.0) * 0.13);
+
+            // Azimuth angle in XZ plane with wide lateral dispersion
+            const baseAzimuth = Math.atan2(dz, dx);
+            const azimuthSpread = (Math.random() - 0.5) * 0.75;
+            const azimuth = baseAzimuth + azimuthSpread;
+
+            // Elevation angle above board plane (from 18° to 72° for spherical hemisphere dispersion)
+            const elevation = 0.32 + Math.random() * 0.95;
+
+            // Variable 3D flight speed (units/s) - 30% slower for calm, majestic arcs
+            let speed = 6.3 + Math.random() * 6.0;
+
+            let vx = speed * Math.cos(elevation) * Math.cos(azimuth);
+            let vy = speed * Math.sin(elevation) + (1.8 + Math.random() * 2.5);
+            let vz = speed * Math.cos(elevation) * Math.sin(azimuth);
+
+            // Some bricks explicitly pushed forward towards the camera (+Z / +Y)
+            if (Math.random() < 0.30) {
+              vz += 2.5 + Math.random() * 3.5;
+              vy += 1.4 + Math.random() * 2.1;
+            }
+
+            // Gentle gravity scaled with slower speed for extended soaring hang-time
+            const gravity = -5.8;
+
+            // Fixed, unchanging 3D rotation axis (random unit vector in 3D sphere)
+            const rx = (Math.random() - 0.5) || 0.1;
+            const ry = (Math.random() - 0.5) || 0.1;
+            const rz = (Math.random() - 0.5) || 0.1;
+            const rotAxis = new THREE.Vector3(rx, ry, rz).normalize();
+
+            // Constant, unchanging angular rotation speed (rad/s) scaled with slower speed
+            const rotSpeed = (Math.random() < 0.5 ? -1 : 1) * (3.2 + Math.random() * 4.5);
+
+            flyingBricks.push({
+              meshGroup,
+              startPos,
+              startQuat,
+              rotAxis,
+              rotSpeed,
+              delay,
+              vx,
+              vy,
+              vz,
+              gravity,
+            });
+          });
+
+          // Run physics ballistic flight tween
+          if (flyingBricks.length > 0) {
+            this.tween(
+              explosionDuration,
+              (eased, rawProgress) => {
+                const totalElapsed = rawProgress * explosionDuration;
+                for (let i = 0; i < flyingBricks.length; i++) {
+                  const b = flyingBricks[i];
+                  if (totalElapsed < b.delay) continue;
+
+                  const t = totalElapsed - b.delay;
+                  b.meshGroup.position.x = b.startPos.x + b.vx * t;
+                  b.meshGroup.position.y = Math.max(-12, b.startPos.y + b.vy * t + 0.5 * b.gravity * t * t);
+                  b.meshGroup.position.z = b.startPos.z + b.vz * t;
+
+                  // Strict constant rotation axis and constant angular speed: R(t) = Rot(axis, speed * t) * Q0
+                  deltaQuat.setFromAxisAngle(b.rotAxis, b.rotSpeed * t);
+                  b.meshGroup.quaternion.multiplyQuaternions(deltaQuat, b.startQuat);
+                }
+              },
+              () => {
+                for (let i = 0; i < flyingBricks.length; i++) {
+                  const meshGroup = flyingBricks[i].meshGroup;
+                  if (meshGroup.parent) {
+                    meshGroup.parent.remove(meshGroup);
+                  } else if (scene) {
+                    scene.remove(meshGroup);
+                  }
+                  const bInst = meshGroup.userData?.brickMesh;
+                  if (bInst) bInst.dispose();
+                }
+                brickMeshesMap.clear();
+              },
+              (t) => t
+            );
+          }
+
+          // 3. Launch initial dense full-board canopy of fluttering multicolored confetti
+          particleSystem.spawnConfettiShower(240, 3.0);
 
           // Helper to trigger timed firework bursts matching the audio bursts
           const triggerTimedFirework = (delayMs, pos, color) => {
@@ -408,27 +523,27 @@ export class Animator {
             }, delayMs);
           };
 
-          // 2. Staggered 3D Fireworks synchronized with audio rockets & explosions
-          triggerTimedFirework(250, new THREE.Vector3(0, 3.2, 0), 'amber');
-          triggerTimedFirework(550, new THREE.Vector3(-3.2, 2.8, -2.5), 'crimson');
+          // 4. Staggered 3D Fireworks synchronized with audio rockets & explosions
+          triggerTimedFirework(300, new THREE.Vector3(0, 3.2, 0), 'amber');
+          triggerTimedFirework(750, new THREE.Vector3(-3.2, 3.5, -2.5), 'crimson');
 
-          // Secondary confetti burst at 0.65s for rich continuous falling effect
+          // Secondary confetti burst at 0.9s for rich continuous falling effect
           setTimeout(() => {
             if (particleSystem.spawnConfettiShower) {
-              particleSystem.spawnConfettiShower(180, 2.0);
+              particleSystem.spawnConfettiShower(180, 2.6);
             }
-          }, 650);
+          }, 900);
 
-          triggerTimedFirework(900, new THREE.Vector3(3.0, 3.0, 2.5), 'cobalt');
-          triggerTimedFirework(1250, new THREE.Vector3(3.2, 3.2, -2.5), 'emerald');
-          triggerTimedFirework(1550, new THREE.Vector3(-2.8, 3.0, 3.2), 'amber');
+          triggerTimedFirework(1300, new THREE.Vector3(3.0, 3.6, 2.5), 'cobalt');
+          triggerTimedFirework(1800, new THREE.Vector3(3.2, 3.8, -2.5), 'emerald');
+          triggerTimedFirework(2250, new THREE.Vector3(-2.8, 3.6, 3.2), 'amber');
 
           // Grand Finale twin bursts
-          triggerTimedFirework(1750, new THREE.Vector3(-1.8, 3.8, 0.5), 'crimson');
-          triggerTimedFirework(1780, new THREE.Vector3(1.8, 3.8, 1.5), 'emerald');
+          triggerTimedFirework(2600, new THREE.Vector3(-1.8, 4.2, 0.5), 'crimson');
+          triggerTimedFirework(2640, new THREE.Vector3(1.8, 4.2, 1.5), 'emerald');
 
-          // Full 2.0s dramatic celebration before modal popup
-          await new Promise((r) => setTimeout(r, 2000));
+          // Full 3.0s dramatic celebration before modal popup
+          await new Promise((r) => setTimeout(r, 3000));
           break;
         }
 
